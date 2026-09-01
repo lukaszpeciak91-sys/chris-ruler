@@ -4,8 +4,8 @@
         Title="Chris Ruler"
         Width="800"
         Height="120"
-        MinWidth="160"
-        MinHeight="56"
+        MinWidth="120"
+        MinHeight="54"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None"
         AllowsTransparency="True"
@@ -37,23 +37,23 @@
     </Window.Resources>
 
     <Grid>
-        <!-- The four rectangles match the native window-region bars: 22/12 DIP
-             horizontally and 10 DIP vertically. Their alpha is 70% (0xB3). -->
-        <Rectangle Height="22" VerticalAlignment="Top" Fill="#B30078B8" IsHitTestVisible="False" />
-        <Rectangle Height="12" VerticalAlignment="Bottom" Fill="#B30078B8" IsHitTestVisible="False" />
-        <Rectangle Width="10" HorizontalAlignment="Left" Margin="0,22,0,12"
+        <!-- The four rectangles match the native window-region bars: 26/14 DIP
+             horizontally and 14 DIP vertically. Their alpha is 70% (0xB3). -->
+        <Rectangle Height="26" VerticalAlignment="Top" Fill="#B30078B8" IsHitTestVisible="False" />
+        <Rectangle Height="14" VerticalAlignment="Bottom" Fill="#B30078B8" IsHitTestVisible="False" />
+        <Rectangle Width="14" HorizontalAlignment="Left" Margin="0,26,0,14"
                    Fill="#B30078B8" IsHitTestVisible="False" />
-        <Rectangle Width="10" HorizontalAlignment="Right" Margin="0,22,0,12"
+        <Rectangle Width="14" HorizontalAlignment="Right" Margin="0,26,0,14"
                    Fill="#B30078B8" IsHitTestVisible="False" />
 
         <!-- Lightweight highlights add definition without effects or compositor APIs. -->
         <Border Margin="1" BorderBrush="#66FFFFFF" BorderThickness="1" IsHitTestVisible="False" />
-        <Border Margin="10,22,10,12" BorderBrush="#7300AEEF" BorderThickness="1" IsHitTestVisible="False" />
+        <Border Margin="14,26,14,14" BorderBrush="#7300AEEF" BorderThickness="1" IsHitTestVisible="False" />
 
         <!-- Unitless orientation marks: every fifth mark is longer. -->
-        <Rectangle Height="15" Margin="10,6,58,0" VerticalAlignment="Top" IsHitTestVisible="False">
+        <Rectangle Height="17" Margin="14,8,58,0" VerticalAlignment="Top" IsHitTestVisible="False">
             <Rectangle.Fill>
-                <DrawingBrush TileMode="Tile" Viewport="0,0,40,15" ViewportUnits="Absolute">
+                <DrawingBrush TileMode="Tile" Viewport="0,0,40,17" ViewportUnits="Absolute">
                     <DrawingBrush.Drawing>
                         <DrawingGroup>
                             <GeometryDrawing>
@@ -62,11 +62,11 @@
                                 </GeometryDrawing.Pen>
                                 <GeometryDrawing.Geometry>
                                     <GeometryGroup>
-                                        <LineGeometry StartPoint="0.5,4" EndPoint="0.5,15" />
-                                        <LineGeometry StartPoint="8.5,9" EndPoint="8.5,15" />
-                                        <LineGeometry StartPoint="16.5,9" EndPoint="16.5,15" />
-                                        <LineGeometry StartPoint="24.5,9" EndPoint="24.5,15" />
-                                        <LineGeometry StartPoint="32.5,9" EndPoint="32.5,15" />
+                                        <LineGeometry StartPoint="0.5,4" EndPoint="0.5,17" />
+                                        <LineGeometry StartPoint="8.5,11" EndPoint="8.5,17" />
+                                        <LineGeometry StartPoint="16.5,11" EndPoint="16.5,17" />
+                                        <LineGeometry StartPoint="24.5,11" EndPoint="24.5,17" />
+                                        <LineGeometry StartPoint="32.5,11" EndPoint="32.5,17" />
                                     </GeometryGroup>
                                 </GeometryDrawing.Geometry>
                             </GeometryDrawing>

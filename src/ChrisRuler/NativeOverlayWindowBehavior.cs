@@ -34,9 +34,9 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
     private const uint SwpNoSize = 0x0001;
     private const uint SwpNoZOrder = 0x0004;
     private const uint SwpNoActivate = 0x0010;
-    private const double TopBarHeightDip = 22;
-    private const double BottomBarHeightDip = 12;
-    private const double SideBarWidthDip = 10;
+    private const double TopBarHeightDip = 26;
+    private const double BottomBarHeightDip = 14;
+    private const double SideBarWidthDip = 14;
     private const double ResizeBandThicknessDip = 3;
     private const double CornerLengthDip = 16;
     private const int IdcSizeAll = 32646;
