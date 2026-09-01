@@ -26,6 +26,23 @@ The first testable version should:
 
 The implementation should stay intentionally small. Do not introduce additional frameworks, services, databases, telemetry, accounts, network access, or background processes unless a future requirement clearly needs them.
 
+## Build and publish
+
+The application requires the .NET 8 SDK and a Windows-compatible build environment.
+
+```powershell
+dotnet restore
+dotnet build
+dotnet build -c Release
+dotnet publish src/ChrisRuler/ChrisRuler.csproj -p:PublishProfile=win-x64
+```
+
+The publish profile creates a self-contained, single-file Windows x64 executable in
+`src/ChrisRuler/bin/publish/win-x64`. It can be copied and run without installing the
+.NET runtime. Self-contained publishing makes the output substantially larger than a
+framework-dependent build; the exact size should be recorded when the publish is run
+in a .NET-capable environment.
+
 ## Project documents
 
 - [`AGENTS.md`](AGENTS.md) — authoritative implementation rules for Codex/agents
@@ -34,6 +51,8 @@ The implementation should stay intentionally small. Do not introduce additional 
 
 ## Current phase
 
-**Phase 0 — documentation and project setup.**
+**Phase 1 — foundation.**
 
-After that we build the smallest functional foundation, perform a general pre-test cleanup/hardening pass, and then test the executable on a real Windows machine.
+The repository now contains the minimal WPF overlay foundation. Moving, resizing, and
+partial click-through input are intentionally deferred to Phase 2. The current window
+behavior still requires manual verification on Windows.
