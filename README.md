@@ -51,8 +51,9 @@ in a .NET-capable environment.
 
 ## Current phase
 
-**Phase 1 — foundation.**
+**Phase 2 — core interaction implemented; manual Windows validation pending.**
 
-The repository now contains the minimal WPF overlay foundation. Moving, resizing, and
-partial click-through input are intentionally deferred to Phase 2. The current window
-behavior still requires manual verification on Windows.
+The ruler uses native hit testing for frame movement and resizing. Its center is removed
+from the native window region so input can reach an unrelated application underneath.
+Cross-process click-through, DPI, resize, and multi-monitor behavior still require manual
+verification on Windows before the project advances to hardening.
