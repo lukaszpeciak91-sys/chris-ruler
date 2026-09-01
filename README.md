@@ -12,7 +12,7 @@ The first testable version should:
 - stay always on top,
 - be movable,
 - be resizable from all sides and corners,
-- show a practical translucent blue frame with a 22 DIP top ruler, 12 DIP bottom ruler, and 10 DIP sides,
+- show a practical translucent blue frame with a 26 DIP top ruler, 14 DIP bottom ruler, and 14 DIP sides,
 - keep the center visually transparent,
 - allow mouse interaction through the transparent center to the application underneath,
 - provide compact Close and Next Row controls without blocking the center,
@@ -83,7 +83,8 @@ establish that a detection has been resolved.
 
 The ruler uses a thicker, 70%-opaque blue frame with native hit testing for frame movement and resizing. Its center is removed
 from the native window region so input can reach an unrelated application underneath. The top bar is an integrated drag surface, while a narrow outer band and the corners retain resizing.
-The minimum window height is 56 DIP, leaving a usable center between the thicker bars.
+The 120 × 54 DIP minimum window size keeps the controls separated and the bars fully
+visible while allowing a 92 × 14 DIP transparent center for short spreadsheet rows.
 The top-right Close button exits normally, while the adjacent Next Row button moves the
 ruler down by its current height and stops at the bottom of the virtual desktop. Subtle
 horizontal ticks alternate regular marks with a longer mark every fifth interval; they are visual guides only and do not represent a measurement scale.
