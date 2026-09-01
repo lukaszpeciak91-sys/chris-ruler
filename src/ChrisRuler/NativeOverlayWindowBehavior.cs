@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Threading;
 
 namespace ChrisRuler;
@@ -14,6 +15,7 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
     private const int WmNcHitTest = 0x0084;
     private const int WmDpiChanged = 0x02E0;
 
+    private const int HtNowhere = 0;
     private const int HtCaption = 2;
     private const int HtLeft = 10;
     private const int HtRight = 11;
@@ -32,7 +34,9 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
 
     private readonly Window window;
     private HwndSource? source;
+    private DispatcherOperation? pendingRegionUpdate;
     private nint hwnd;
+    private bool disposed;
 
     public NativeOverlayWindowBehavior(Window window)
     {
@@ -43,20 +47,41 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
 
     public void Dispose()
     {
+        if (disposed)
+        {
+            return;
+        }
+
+        disposed = true;
         window.SourceInitialized -= OnSourceInitialized;
         window.SizeChanged -= OnSizeChanged;
+        pendingRegionUpdate?.Abort();
+        pendingRegionUpdate = null;
 
         if (source is not null)
         {
             source.RemoveHook(WindowProc);
             source = null;
         }
+
+        hwnd = nint.Zero;
     }
 
     private void OnSourceInitialized(object? sender, EventArgs e)
     {
+        if (disposed || source is not null)
+        {
+            return;
+        }
+
         hwnd = new WindowInteropHelper(window).Handle;
         source = HwndSource.FromHwnd(hwnd);
+        if (source is null)
+        {
+            hwnd = nint.Zero;
+            return;
+        }
+
         source.AddHook(WindowProc);
         ApplyFrameRegion();
     }
@@ -74,7 +99,10 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
         if (message == WmDpiChanged)
         {
             // WPF applies the suggested DPI bounds after this hook returns.
-            window.Dispatcher.BeginInvoke(DispatcherPriority.Loaded, new Action(ApplyFrameRegion));
+            pendingRegionUpdate?.Abort();
+            pendingRegionUpdate = window.Dispatcher.BeginInvoke(
+                DispatcherPriority.Loaded,
+                new Action(ApplyPendingFrameRegion));
         }
 
         return nint.Zero;
@@ -84,7 +112,9 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
     {
         if (!GetWindowRect(hwnd, out Rect windowRect))
         {
-            return HtCaption;
+            // Do not turn an unknown area into a draggable surface when native state
+            // is unavailable. A later hit test can recover normally.
+            return HtNowhere;
         }
 
         // WM_NCHITTEST packs signed virtual-screen coordinates into LPARAM.
@@ -95,8 +125,14 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
         int y = screenY - windowRect.Top;
         int width = windowRect.Right - windowRect.Left;
         int height = windowRect.Bottom - windowRect.Top;
-        int frame = DipToPixels(FrameThicknessDip);
-        int resizeBand = DipToPixels(ResizeBandThicknessDip);
+        if (width <= 0 || height <= 0 || x < 0 || y < 0 || x >= width || y >= height)
+        {
+            return HtNowhere;
+        }
+
+        int maximumInset = Math.Min(width, height) / 2;
+        int frame = Math.Min(DipToPixels(FrameThicknessDip), maximumInset);
+        int resizeBand = Math.Min(DipToPixels(ResizeBandThicknessDip), frame);
         int cornerLength = Math.Min(
             DipToPixels(CornerLengthDip),
             Math.Min(width / 2, height / 2));
@@ -126,7 +162,7 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
 
     private void ApplyFrameRegion()
     {
-        if (hwnd == nint.Zero || !GetWindowRect(hwnd, out Rect windowRect))
+        if (disposed || hwnd == nint.Zero || !GetWindowRect(hwnd, out Rect windowRect))
         {
             return;
         }
@@ -136,7 +172,7 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
         // so the WPF border fills these full window dimensions.
         int width = windowRect.Right - windowRect.Left;
         int height = windowRect.Bottom - windowRect.Top;
-        if (width <= 0 || height <= 0)
+        if (width < 2 || height < 2)
         {
             return;
         }
@@ -172,12 +208,23 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
         // On success Windows owns outerRegion; it must not be deleted here.
     }
 
+    private void ApplyPendingFrameRegion()
+    {
+        pendingRegionUpdate = null;
+        ApplyFrameRegion();
+    }
+
     private int DipToPixels(double dip)
     {
         uint dpi = GetDpiForWindow(hwnd);
         if (dpi == 0)
         {
-            dpi = 96;
+            // WPF's per-monitor value is the safest fallback if the native query
+            // temporarily fails during a window/DPI transition.
+            double wpfDpi = VisualTreeHelper.GetDpi(window).PixelsPerInchX;
+            dpi = double.IsFinite(wpfDpi) && wpfDpi > 0
+                ? (uint)Math.Round(wpfDpi)
+                : 96;
         }
 
         return Math.Max(1, (int)Math.Ceiling(dip * dpi / 96.0));
