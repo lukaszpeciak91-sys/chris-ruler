@@ -12,7 +12,89 @@
         Background="Transparent"
         Topmost="True"
         ShowInTaskbar="True">
-    <Border BorderBrush="#FF0078D4"
-            BorderThickness="4"
-            Background="Transparent" />
+    <Grid>
+        <Border BorderBrush="#FF0078D4"
+                BorderThickness="4"
+                Background="Transparent" />
+
+        <!-- These decorative marks are intentionally unitless visual guides. -->
+        <Rectangle Height="4"
+                   VerticalAlignment="Top"
+                   IsHitTestVisible="False">
+            <Rectangle.Fill>
+                <DrawingBrush TileMode="Tile"
+                              Viewport="0,0,24,4"
+                              ViewportUnits="Absolute">
+                    <DrawingBrush.Drawing>
+                        <GeometryDrawing Brush="#FF0078D4">
+                            <GeometryDrawing.Pen>
+                                <Pen Brush="#80FFFFFF" Thickness="1" />
+                            </GeometryDrawing.Pen>
+                            <GeometryDrawing.Geometry>
+                                <LineGeometry StartPoint="0.5,1" EndPoint="0.5,4" />
+                            </GeometryDrawing.Geometry>
+                        </GeometryDrawing>
+                    </DrawingBrush.Drawing>
+                </DrawingBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+        <Rectangle Height="4"
+                   VerticalAlignment="Bottom"
+                   IsHitTestVisible="False">
+            <Rectangle.Fill>
+                <DrawingBrush TileMode="Tile"
+                              Viewport="0,0,24,4"
+                              ViewportUnits="Absolute">
+                    <DrawingBrush.Drawing>
+                        <GeometryDrawing Brush="#FF0078D4">
+                            <GeometryDrawing.Pen>
+                                <Pen Brush="#80FFFFFF" Thickness="1" />
+                            </GeometryDrawing.Pen>
+                            <GeometryDrawing.Geometry>
+                                <LineGeometry StartPoint="0.5,0" EndPoint="0.5,3" />
+                            </GeometryDrawing.Geometry>
+                        </GeometryDrawing>
+                    </DrawingBrush.Drawing>
+                </DrawingBrush>
+            </Rectangle.Fill>
+        </Rectangle>
+
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Margin="0,4,4,0">
+            <Button x:Name="NextRowButton"
+                    Width="20"
+                    Height="20"
+                    Margin="0,0,2,0"
+                    Padding="0"
+                    Background="#FF0078D4"
+                    BorderThickness="0"
+                    Foreground="White"
+                    FontSize="13"
+                    ToolTip="Next row"
+                    Click="NextRowButton_Click">▼</Button>
+            <Button x:Name="CloseButton"
+                    Width="20"
+                    Height="20"
+                    Padding="0"
+                    BorderThickness="0"
+                    Foreground="White"
+                    FontSize="16"
+                    ToolTip="Close"
+                    Click="CloseButton_Click">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Background" Value="#FF0078D4" />
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#FFC42B1C" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+                ×
+            </Button>
+        </StackPanel>
+    </Grid>
 </Window>

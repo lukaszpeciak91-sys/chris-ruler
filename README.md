@@ -15,6 +15,8 @@ The first testable version should:
 - show only a thin visible frame (target: roughly 2–4 px),
 - keep the center visually transparent,
 - allow mouse interaction through the transparent center to the application underneath,
+- provide compact Close and Next Row controls without blocking the center,
+- show subtle, unitless horizontal guide ticks,
 - remain simple and unobtrusive.
 
 ## Technical direction
@@ -55,6 +57,9 @@ in a .NET-capable environment.
 
 The ruler uses native hit testing for frame movement and resizing. Its center is removed
 from the native window region so input can reach an unrelated application underneath.
+The top-right Close button exits normally, while the adjacent Next Row button moves the
+ruler down by its current height and stops at the bottom of the virtual desktop. Subtle
+horizontal ticks are visual guides only and do not represent a measurement scale.
 The native interaction path has been statically reviewed for DPI changes, signed virtual-
 screen coordinates, region ownership/failures, minimum geometry, and window lifecycle.
 Cross-process click-through, resize, and multi-monitor behavior still require the first
