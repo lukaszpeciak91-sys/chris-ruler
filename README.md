@@ -60,7 +60,19 @@ Both builds are currently unsigned. Windows may show an unverified-publisher or
 reputation warning, and corporate policy may still block them; the application does not
 attempt to suppress or bypass those controls. Trusted Authenticode signing is the proper
 long-term way to establish publisher identity and reputation if distribution broadens,
-but it cannot guarantee zero antivirus detections.
+but it cannot guarantee zero antivirus detections. A self-signed certificate should not
+be presented as a SmartScreen or executable-reputation solution.
+
+### Antivirus packaging diagnostic
+
+During real-machine testing, Avast Premium Security has repeatedly quarantined the
+GitHub Actions build as the heuristic detection `Win64:Malware-gen`. This detection has
+not been proven resolved. The two CI artifacts are temporarily produced for controlled
+A/B testing: `ChrisRuler-win-x64` preserves the current single-file/self-extracting
+baseline, while `ChrisRuler-win-x64-folder-diagnostic` contains an untrimmed,
+uncompressed, self-contained folder publish. The comparison is intended to determine
+whether single-file packaging contributes to the detection, rather than to bypass or
+weaken antivirus controls.
 
 If a build is reported as malicious, a developer should verify its SHA-256 and submit
 the suspected false positive through that antivirus vendor's official sample/false-
@@ -69,7 +81,8 @@ an explicit human decision. Users should not be told to disable protection or cr
 broad exclusions. Compare the main and folder diagnostic results before deciding whether
 single-file packaging should remain the default. Manual Windows overlay testing and
 external antivirus rescanning are still required; a successful build alone does not
-establish that a detection has been resolved.
+establish that a detection has been resolved. Do not disable antivirus protection to run
+either diagnostic variant.
 
 ## Project documents
 

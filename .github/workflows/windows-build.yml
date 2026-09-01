@@ -38,12 +38,19 @@ jobs:
       - name: Verify published outputs and record SHA-256
         shell: pwsh
         run: |
-          $publishDirectories = @(
-            "src/ChrisRuler/bin/publish/win-x64",
-            "src/ChrisRuler/bin/publish/win-x64-folder-diagnostic"
+          $publishVariants = @(
+            @{
+              Name = "single-file"
+              Directory = "src/ChrisRuler/bin/publish/win-x64"
+            },
+            @{
+              Name = "folder-diagnostic"
+              Directory = "src/ChrisRuler/bin/publish/win-x64-folder-diagnostic"
+            }
           )
 
-          foreach ($publishDirectory in $publishDirectories) {
+          foreach ($variant in $publishVariants) {
+            $publishDirectory = $variant.Directory
             $executable = Join-Path $publishDirectory "ChrisRuler.exe"
             Write-Host "Published files in ${publishDirectory}:"
             Get-ChildItem -Path $publishDirectory -File | Format-Table Name, Length
@@ -53,8 +60,8 @@ jobs:
             }
 
             $hash = (Get-FileHash -Path $executable -Algorithm SHA256).Hash.ToLowerInvariant()
-            $hashLine = "$hash  ChrisRuler.exe"
-            Write-Host "SHA-256 (${executable}): $hash"
+            $hashLine = "$hash  $($variant.Name)/ChrisRuler.exe"
+            Write-Host "SHA-256 [$($variant.Name)] ${executable}: $hash"
             Set-Content -Path (Join-Path $publishDirectory "ChrisRuler.exe.sha256.txt") -Value $hashLine -Encoding ascii
           }
 
