@@ -51,9 +51,11 @@ in a .NET-capable environment.
 
 ## Current phase
 
-**Phase 2 — core interaction implemented; manual Windows validation pending.**
+**Phase 3 — pre-test hardening complete; manual Windows validation pending.**
 
 The ruler uses native hit testing for frame movement and resizing. Its center is removed
 from the native window region so input can reach an unrelated application underneath.
-Cross-process click-through, DPI, resize, and multi-monitor behavior still require manual
-verification on Windows before the project advances to hardening.
+The native interaction path has been statically reviewed for DPI changes, signed virtual-
+screen coordinates, region ownership/failures, minimum geometry, and window lifecycle.
+Cross-process click-through, resize, and multi-monitor behavior still require the first
+manual Windows test before further features or polish are considered.
