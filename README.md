@@ -2,7 +2,7 @@
 
 A small portable Windows desktop utility for using an on-screen guide while working in applications such as spreadsheets.
 
-Chris Ruler is **not a pixel-measuring ruler**. Its purpose is to create a thin, always-on-top frame that helps the user visually follow a row or area while still being able to interact with the application underneath.
+Chris Ruler is **not a pixel-measuring ruler**. Its purpose is to create a translucent, always-on-top ruler-style frame that helps the user visually follow a row or area while still being able to interact with the application underneath.
 
 ## MVP
 
@@ -12,11 +12,12 @@ The first testable version should:
 - stay always on top,
 - be movable,
 - be resizable from all sides and corners,
-- show only a thin visible frame (target: roughly 2–4 px),
+- show a practical translucent blue frame with a 22 DIP top ruler, 12 DIP bottom ruler, and 10 DIP sides,
 - keep the center visually transparent,
 - allow mouse interaction through the transparent center to the application underneath,
 - provide compact Close and Next Row controls without blocking the center,
-- show subtle, unitless horizontal guide ticks,
+- provide a broad integrated drag area across the top ruler bar,
+- show clear unitless guide ticks, with a longer orientation mark every fifth tick,
 - remain simple and unobtrusive.
 
 ## Technical direction
@@ -61,13 +62,14 @@ Manual validation of the overlay's behavior on Windows is still pending.
 
 ## Current phase
 
-**Phase 3 — pre-test hardening complete; manual Windows validation pending.**
+**Phase 5 — first real-machine UX corrections in progress; revised design requires manual Windows validation.**
 
-The ruler uses native hit testing for frame movement and resizing. Its center is removed
-from the native window region so input can reach an unrelated application underneath.
+The ruler uses a thicker, 70%-opaque blue frame with native hit testing for frame movement and resizing. Its center is removed
+from the native window region so input can reach an unrelated application underneath. The top bar is an integrated drag surface, while a narrow outer band and the corners retain resizing.
+The minimum window height is 56 DIP, leaving a usable center between the thicker bars.
 The top-right Close button exits normally, while the adjacent Next Row button moves the
 ruler down by its current height and stops at the bottom of the virtual desktop. Subtle
-horizontal ticks are visual guides only and do not represent a measurement scale.
+horizontal ticks alternate regular marks with a longer mark every fifth interval; they are visual guides only and do not represent a measurement scale.
 The native interaction path has been statically reviewed for DPI changes, signed virtual-
 screen coordinates, region ownership/failures, minimum geometry, and window lifecycle.
 Cross-process click-through, resize, and multi-monitor behavior still require the first

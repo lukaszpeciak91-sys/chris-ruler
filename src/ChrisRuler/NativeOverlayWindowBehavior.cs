@@ -13,6 +13,7 @@ namespace ChrisRuler;
 internal sealed class NativeOverlayWindowBehavior : IDisposable
 {
     private const int WmNcHitTest = 0x0084;
+    private const int WmSetCursor = 0x0020;
     private const int WmDpiChanged = 0x02E0;
 
     private const int HtNowhere = 0;
@@ -28,15 +29,17 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
 
     private const int Error = 0;
     private const int RgnDiff = 4;
-    private const int RgnOr = 2;
     private const int SmYVirtualScreen = 77;
     private const int SmCyVirtualScreen = 79;
     private const uint SwpNoSize = 0x0001;
     private const uint SwpNoZOrder = 0x0004;
     private const uint SwpNoActivate = 0x0010;
-    private const double FrameThicknessDip = 4;
-    private const double ResizeBandThicknessDip = 2;
-    private const double CornerLengthDip = 12;
+    private const double TopBarHeightDip = 22;
+    private const double BottomBarHeightDip = 12;
+    private const double SideBarWidthDip = 10;
+    private const double ResizeBandThicknessDip = 3;
+    private const double CornerLengthDip = 16;
+    private const int IdcSizeAll = 32646;
 
     private readonly Window window;
     private readonly FrameworkElement[] controls;
@@ -44,6 +47,7 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
     private DispatcherOperation? pendingRegionUpdate;
     private nint hwnd;
     private bool disposed;
+    private nint sizeAllCursor;
 
     public NativeOverlayWindowBehavior(Window window, params FrameworkElement[] controls)
     {
@@ -125,6 +129,17 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
             return HitTest(lParam);
         }
 
+        if (message == WmSetCursor && unchecked((short)((long)lParam & 0xFFFF)) == HtCaption)
+        {
+            sizeAllCursor = sizeAllCursor != nint.Zero ? sizeAllCursor : LoadCursor(nint.Zero, IdcSizeAll);
+            if (sizeAllCursor != nint.Zero)
+            {
+                SetCursor(sizeAllCursor);
+                handled = true;
+                return 1;
+            }
+        }
+
         if (message == WmDpiChanged)
         {
             // WPF applies the suggested DPI bounds after this hook returns.
@@ -164,16 +179,20 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
         }
 
         int maximumInset = Math.Min(width, height) / 2;
-        int frame = Math.Min(DipToPixels(FrameThicknessDip), maximumInset);
-        int resizeBand = Math.Min(DipToPixels(ResizeBandThicknessDip), frame);
+        int leftBar = Math.Min(DipToPixels(SideBarWidthDip), maximumInset);
+        int rightBar = leftBar;
+        int topBar = Math.Min(DipToPixels(TopBarHeightDip), maximumInset);
+        int bottomBar = Math.Min(DipToPixels(BottomBarHeightDip), maximumInset);
+        int resizeBand = Math.Min(DipToPixels(ResizeBandThicknessDip),
+            Math.Min(Math.Min(leftBar, rightBar), Math.Min(topBar, bottomBar)));
         int cornerLength = Math.Min(
             DipToPixels(CornerLengthDip),
             Math.Min(width / 2, height / 2));
 
-        bool leftFrame = x < frame;
-        bool rightFrame = x >= width - frame;
-        bool topFrame = y < frame;
-        bool bottomFrame = y >= height - frame;
+        bool leftFrame = x < leftBar;
+        bool rightFrame = x >= width - rightBar;
+        bool topFrame = y < topBar;
+        bool bottomFrame = y >= height - bottomBar;
 
         // Corners use a short length along both adjoining visible sides. This keeps
         // diagonal resize practical without extending the hit target into the center.
@@ -182,8 +201,8 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
         if ((bottomFrame && x < cornerLength) || (leftFrame && y >= height - cornerLength)) return HtBottomLeft;
         if ((bottomFrame && x >= width - cornerLength) || (rightFrame && y >= height - cornerLength)) return HtBottomRight;
 
-        // Only the outer half of the visible border resizes. The inner half remains
-        // a clearly visible caption strip for moving the ruler.
+        // Only a narrow outer band resizes. The substantial inner portion of each
+        // ruler bar remains an easy-to-grab caption surface.
         if (x < resizeBand) return HtLeft;
         if (x >= width - resizeBand) return HtRight;
         if (y < resizeBand) return HtTop;
@@ -210,14 +229,17 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
             return;
         }
 
-        int frame = Math.Min(DipToPixels(FrameThicknessDip), Math.Min(width, height) / 2);
+        int maximumInset = Math.Min(width, height) / 2;
+        int sideBar = Math.Min(DipToPixels(SideBarWidthDip), maximumInset);
+        int topBar = Math.Min(DipToPixels(TopBarHeightDip), maximumInset);
+        int bottomBar = Math.Min(DipToPixels(BottomBarHeightDip), maximumInset);
         nint outerRegion = CreateRectRgn(0, 0, width, height);
         if (outerRegion == nint.Zero)
         {
             return;
         }
 
-        nint innerRegion = CreateRectRgn(frame, frame, width - frame, height - frame);
+        nint innerRegion = CreateRectRgn(sideBar, topBar, width - sideBar, height - bottomBar);
         if (innerRegion == nint.Zero)
         {
             DeleteObject(outerRegion);
@@ -230,29 +252,6 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
         {
             DeleteObject(outerRegion);
             return;
-        }
-
-        foreach (FrameworkElement control in controls)
-        {
-            PixelRect controlRect = GetControlRect(control);
-            if (controlRect.Width <= 0 || controlRect.Height <= 0)
-            {
-                continue;
-            }
-
-            nint controlRegion = CreateRectRgn(controlRect.Left, controlRect.Top, controlRect.Right, controlRect.Bottom);
-            if (controlRegion == nint.Zero)
-            {
-                continue;
-            }
-
-            int controlRegionType = CombineRgn(outerRegion, outerRegion, controlRegion, RgnOr);
-            DeleteObject(controlRegion);
-            if (controlRegionType == Error)
-            {
-                DeleteObject(outerRegion);
-                return;
-            }
         }
 
         // Unlike HTTRANSPARENT, a native window-region hole is absent from desktop
@@ -330,6 +329,12 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
 
     [DllImport("user32.dll")]
     private static extern uint GetDpiForWindow(nint hwnd);
+
+    [DllImport("user32.dll")]
+    private static extern nint LoadCursor(nint instance, int cursorName);
+
+    [DllImport("user32.dll")]
+    private static extern nint SetCursor(nint cursor);
 
     [DllImport("user32.dll")]
     private static extern int GetSystemMetrics(int index);
