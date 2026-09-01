@@ -24,9 +24,11 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
     private const int HtBottomLeft = 16;
     private const int HtBottomRight = 17;
 
+    private const int Error = 0;
     private const int RgnDiff = 4;
-    private const double InteractiveFrameThicknessDip = 8;
-    private const double ResizeBandThicknessDip = 5;
+    private const double FrameThicknessDip = 4;
+    private const double ResizeBandThicknessDip = 2;
+    private const double CornerLengthDip = 12;
 
     private readonly Window window;
     private HwndSource? source;
@@ -93,22 +95,30 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
         int y = screenY - windowRect.Top;
         int width = windowRect.Right - windowRect.Left;
         int height = windowRect.Bottom - windowRect.Top;
+        int frame = DipToPixels(FrameThicknessDip);
         int resizeBand = DipToPixels(ResizeBandThicknessDip);
+        int cornerLength = Math.Min(
+            DipToPixels(CornerLengthDip),
+            Math.Min(width / 2, height / 2));
 
-        bool left = x < resizeBand;
-        bool right = x >= width - resizeBand;
-        bool top = y < resizeBand;
-        bool bottom = y >= height - resizeBand;
+        bool leftFrame = x < frame;
+        bool rightFrame = x >= width - frame;
+        bool topFrame = y < frame;
+        bool bottomFrame = y >= height - frame;
 
-        // Corners take precedence so diagonal resizing remains available.
-        if (top && left) return HtTopLeft;
-        if (top && right) return HtTopRight;
-        if (bottom && left) return HtBottomLeft;
-        if (bottom && right) return HtBottomRight;
-        if (left) return HtLeft;
-        if (right) return HtRight;
-        if (top) return HtTop;
-        if (bottom) return HtBottom;
+        // Corners use a short length along both adjoining visible sides. This keeps
+        // diagonal resize practical without extending the hit target into the center.
+        if ((topFrame && x < cornerLength) || (leftFrame && y < cornerLength)) return HtTopLeft;
+        if ((topFrame && x >= width - cornerLength) || (rightFrame && y < cornerLength)) return HtTopRight;
+        if ((bottomFrame && x < cornerLength) || (leftFrame && y >= height - cornerLength)) return HtBottomLeft;
+        if ((bottomFrame && x >= width - cornerLength) || (rightFrame && y >= height - cornerLength)) return HtBottomRight;
+
+        // Only the outer half of the visible border resizes. The inner half remains
+        // a clearly visible caption strip for moving the ruler.
+        if (x < resizeBand) return HtLeft;
+        if (x >= width - resizeBand) return HtRight;
+        if (y < resizeBand) return HtTop;
+        if (y >= height - resizeBand) return HtBottom;
 
         // The inner part of the frame acts like a title bar, without showing one.
         return HtCaption;
@@ -116,19 +126,22 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
 
     private void ApplyFrameRegion()
     {
-        if (hwnd == nint.Zero || !GetClientRect(hwnd, out Rect clientRect))
+        if (hwnd == nint.Zero || !GetWindowRect(hwnd, out Rect windowRect))
         {
             return;
         }
 
-        int width = clientRect.Right - clientRect.Left;
-        int height = clientRect.Bottom - clientRect.Top;
+        // SetWindowRgn coordinates are window-relative. WindowStyle=None together
+        // with AllowsTransparency means this WPF HWND has no separate native frame,
+        // so the WPF border fills these full window dimensions.
+        int width = windowRect.Right - windowRect.Left;
+        int height = windowRect.Bottom - windowRect.Top;
         if (width <= 0 || height <= 0)
         {
             return;
         }
 
-        int frame = Math.Min(DipToPixels(InteractiveFrameThicknessDip), Math.Min(width, height) / 2);
+        int frame = Math.Min(DipToPixels(FrameThicknessDip), Math.Min(width, height) / 2);
         nint outerRegion = CreateRectRgn(0, 0, width, height);
         if (outerRegion == nint.Zero)
         {
@@ -142,8 +155,13 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
             return;
         }
 
-        CombineRgn(outerRegion, outerRegion, innerRegion, RgnDiff);
+        int regionType = CombineRgn(outerRegion, outerRegion, innerRegion, RgnDiff);
         DeleteObject(innerRegion);
+        if (regionType == Error)
+        {
+            DeleteObject(outerRegion);
+            return;
+        }
 
         // Unlike HTTRANSPARENT, a native window-region hole is absent from desktop
         // hit testing entirely, so clicks reach windows owned by other processes too.
@@ -173,9 +191,6 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
         public int Right;
         public int Bottom;
     }
-
-    [DllImport("user32.dll")]
-    private static extern bool GetClientRect(nint hwnd, out Rect rect);
 
     [DllImport("user32.dll")]
     private static extern bool GetWindowRect(nint hwnd, out Rect rect);
