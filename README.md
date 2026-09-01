@@ -45,6 +45,14 @@ The publish profile creates a self-contained, single-file Windows x64 executable
 framework-dependent build; the exact size should be recorded when the publish is run
 in a .NET-capable environment.
 
+### CI build for testers
+
+GitHub Actions verifies the Release build on Windows and publishes the
+`ChrisRuler-win-x64` artifact. The artifact contains the portable `ChrisRuler.exe`; a
+tester can download and run it without installing the .NET runtime. The executable is
+currently unsigned, so Windows or corporate security policy may warn about or block it.
+Manual validation of the overlay's behavior on Windows is still pending.
+
 ## Project documents
 
 - [`AGENTS.md`](AGENTS.md) — authoritative implementation rules for Codex/agents
