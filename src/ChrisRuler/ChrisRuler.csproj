@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AssemblyName>ChrisRuler</AssemblyName>
+    <RootNamespace>ChrisRuler</RootNamespace>
+    <Product>Chris Ruler</Product>
+    <Description>An always-on-top visual guide for Windows.</Description>
+    <Company>Chris Ruler</Company>
+    <Copyright>Copyright © 2026 Chris Ruler contributors</Copyright>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+</Project>
