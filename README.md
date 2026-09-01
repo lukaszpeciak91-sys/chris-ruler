@@ -40,19 +40,36 @@ dotnet build -c Release
 dotnet publish src/ChrisRuler/ChrisRuler.csproj -p:PublishProfile=win-x64
 ```
 
-The publish profile creates a self-contained, single-file Windows x64 executable in
-`src/ChrisRuler/bin/publish/win-x64`. It can be copied and run without installing the
-.NET runtime. Self-contained publishing makes the output substantially larger than a
-framework-dependent build; the exact size should be recorded when the publish is run
-in a .NET-capable environment.
+The main publish profile creates an uncompressed, untrimmed, self-contained single-file
+Windows x64 executable in `src/ChrisRuler/bin/publish/win-x64`. It can be copied and run
+without installing the .NET runtime. Native runtime libraries are bundled and extracted
+by the standard .NET app host when the application starts. No packer, obfuscator, custom
+loader, post-build executable rewriting, or ad-hoc signing is used. Self-contained
+publishing makes the output substantially larger than a framework-dependent build.
 
 ### CI build for testers
 
 GitHub Actions verifies the Release build on Windows and publishes the
-`ChrisRuler-win-x64` artifact. The artifact contains the portable `ChrisRuler.exe`; a
-tester can download and run it without installing the .NET runtime. The executable is
-currently unsigned, so Windows or corporate security policy may warn about or block it.
-Manual validation of the overlay's behavior on Windows is still pending.
+`ChrisRuler-win-x64` artifact. The artifact contains the portable `ChrisRuler.exe` and a
+SHA-256 text file; CI also prints the hash in its log. A second, clearly separated
+`ChrisRuler-win-x64-folder-diagnostic` artifact is a conventional self-contained folder
+publish with no single-file bundle or native extraction. It is intended only to compare
+antivirus results and must be kept with all of its files.
+
+Both builds are currently unsigned. Windows may show an unverified-publisher or
+reputation warning, and corporate policy may still block them; the application does not
+attempt to suppress or bypass those controls. Trusted Authenticode signing is the proper
+long-term way to establish publisher identity and reputation if distribution broadens,
+but it cannot guarantee zero antivirus detections.
+
+If a build is reported as malicious, a developer should verify its SHA-256 and submit
+the suspected false positive through that antivirus vendor's official sample/false-
+positive process. Uploading a binary to a vendor or third-party analysis service must be
+an explicit human decision. Users should not be told to disable protection or create
+broad exclusions. Compare the main and folder diagnostic results before deciding whether
+single-file packaging should remain the default. Manual Windows overlay testing and
+external antivirus rescanning are still required; a successful build alone does not
+establish that a detection has been resolved.
 
 ## Project documents
 
