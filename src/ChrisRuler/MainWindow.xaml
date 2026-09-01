@@ -13,6 +13,6 @@
         Topmost="True"
         ShowInTaskbar="True">
     <Border BorderBrush="#FF0078D4"
-            BorderThickness="3"
+            BorderThickness="4"
             Background="Transparent" />
 </Window>
