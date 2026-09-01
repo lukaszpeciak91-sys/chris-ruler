@@ -28,21 +28,30 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
 
     private const int Error = 0;
     private const int RgnDiff = 4;
+    private const int RgnOr = 2;
+    private const int SmYVirtualScreen = 77;
+    private const int SmCyVirtualScreen = 79;
+    private const uint SwpNoSize = 0x0001;
+    private const uint SwpNoZOrder = 0x0004;
+    private const uint SwpNoActivate = 0x0010;
     private const double FrameThicknessDip = 4;
     private const double ResizeBandThicknessDip = 2;
     private const double CornerLengthDip = 12;
 
     private readonly Window window;
+    private readonly FrameworkElement[] controls;
     private HwndSource? source;
     private DispatcherOperation? pendingRegionUpdate;
     private nint hwnd;
     private bool disposed;
 
-    public NativeOverlayWindowBehavior(Window window)
+    public NativeOverlayWindowBehavior(Window window, params FrameworkElement[] controls)
     {
         this.window = window;
+        this.controls = controls;
         window.SourceInitialized += OnSourceInitialized;
         window.SizeChanged += OnSizeChanged;
+        window.Loaded += OnLoaded;
     }
 
     public void Dispose()
@@ -55,6 +64,7 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
         disposed = true;
         window.SourceInitialized -= OnSourceInitialized;
         window.SizeChanged -= OnSizeChanged;
+        window.Loaded -= OnLoaded;
         pendingRegionUpdate?.Abort();
         pendingRegionUpdate = null;
 
@@ -86,7 +96,26 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
         ApplyFrameRegion();
     }
 
-    private void OnSizeChanged(object sender, SizeChangedEventArgs e) => ApplyFrameRegion();
+    private void OnSizeChanged(object sender, SizeChangedEventArgs e) => ScheduleFrameRegionUpdate();
+
+    private void OnLoaded(object sender, RoutedEventArgs e) => ApplyFrameRegion();
+
+    public void MoveDownOneHeight()
+    {
+        if (disposed || hwnd == nint.Zero || !GetWindowRect(hwnd, out Rect rect))
+        {
+            return;
+        }
+
+        int height = rect.Bottom - rect.Top;
+        int virtualTop = GetSystemMetrics(SmYVirtualScreen);
+        int virtualBottom = virtualTop + GetSystemMetrics(SmCyVirtualScreen);
+
+        // Move by one ruler height unless that would cross the virtual desktop's
+        // bottom edge; in that case, stop flush with the edge instead of disappearing.
+        int newTop = Math.Max(virtualTop, Math.Min(rect.Top + height, virtualBottom - height));
+        SetWindowPos(hwnd, nint.Zero, rect.Left, newTop, 0, 0, SwpNoSize | SwpNoZOrder | SwpNoActivate);
+    }
 
     private nint WindowProc(nint hwnd, int message, nint wParam, nint lParam, ref bool handled)
     {
@@ -99,10 +128,7 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
         if (message == WmDpiChanged)
         {
             // WPF applies the suggested DPI bounds after this hook returns.
-            pendingRegionUpdate?.Abort();
-            pendingRegionUpdate = window.Dispatcher.BeginInvoke(
-                DispatcherPriority.Loaded,
-                new Action(ApplyPendingFrameRegion));
+            ScheduleFrameRegionUpdate();
         }
 
         return nint.Zero;
@@ -128,6 +154,13 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
         if (width <= 0 || height <= 0 || x < 0 || y < 0 || x >= width || y >= height)
         {
             return HtNowhere;
+        }
+
+        // Explicit client areas take priority over the nearby top/right resize zones.
+        // The native region contains only these compact rectangles and the frame.
+        if (controls.Any(control => GetControlRect(control).Contains(x, y)))
+        {
+            return 1; // HTCLIENT lets WPF deliver the button input.
         }
 
         int maximumInset = Math.Min(width, height) / 2;
@@ -199,6 +232,29 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
             return;
         }
 
+        foreach (FrameworkElement control in controls)
+        {
+            PixelRect controlRect = GetControlRect(control);
+            if (controlRect.Width <= 0 || controlRect.Height <= 0)
+            {
+                continue;
+            }
+
+            nint controlRegion = CreateRectRgn(controlRect.Left, controlRect.Top, controlRect.Right, controlRect.Bottom);
+            if (controlRegion == nint.Zero)
+            {
+                continue;
+            }
+
+            int controlRegionType = CombineRgn(outerRegion, outerRegion, controlRegion, RgnOr);
+            DeleteObject(controlRegion);
+            if (controlRegionType == Error)
+            {
+                DeleteObject(outerRegion);
+                return;
+            }
+        }
+
         // Unlike HTTRANSPARENT, a native window-region hole is absent from desktop
         // hit testing entirely, so clicks reach windows owned by other processes too.
         if (SetWindowRgn(hwnd, outerRegion, true) == 0)
@@ -212,6 +268,14 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
     {
         pendingRegionUpdate = null;
         ApplyFrameRegion();
+    }
+
+    private void ScheduleFrameRegionUpdate()
+    {
+        pendingRegionUpdate?.Abort();
+        pendingRegionUpdate = window.Dispatcher.BeginInvoke(
+            DispatcherPriority.Loaded,
+            new Action(ApplyPendingFrameRegion));
     }
 
     private int DipToPixels(double dip)
@@ -230,6 +294,28 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
         return Math.Max(1, (int)Math.Ceiling(dip * dpi / 96.0));
     }
 
+    private PixelRect GetControlRect(FrameworkElement control)
+    {
+        if (!control.IsLoaded || control.ActualWidth <= 0 || control.ActualHeight <= 0)
+        {
+            return default;
+        }
+
+        Point topLeft = control.TransformToAncestor(window).Transform(new Point(0, 0));
+        return new PixelRect(
+            DipToPixels(topLeft.X),
+            DipToPixels(topLeft.Y),
+            DipToPixels(topLeft.X + control.ActualWidth),
+            DipToPixels(topLeft.Y + control.ActualHeight));
+    }
+
+    private readonly record struct PixelRect(int Left, int Top, int Right, int Bottom)
+    {
+        public int Width => Right - Left;
+        public int Height => Bottom - Top;
+        public bool Contains(int x, int y) => x >= Left && x < Right && y >= Top && y < Bottom;
+    }
+
     [StructLayout(LayoutKind.Sequential)]
     private struct Rect
     {
@@ -244,6 +330,19 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
 
     [DllImport("user32.dll")]
     private static extern uint GetDpiForWindow(nint hwnd);
+
+    [DllImport("user32.dll")]
+    private static extern int GetSystemMetrics(int index);
+
+    [DllImport("user32.dll")]
+    private static extern bool SetWindowPos(
+        nint hwnd,
+        nint insertAfter,
+        int x,
+        int y,
+        int width,
+        int height,
+        uint flags);
 
     [DllImport("gdi32.dll")]
     private static extern nint CreateRectRgn(int left, int top, int right, int bottom);
