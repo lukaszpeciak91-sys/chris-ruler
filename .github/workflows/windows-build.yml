@@ -32,23 +32,44 @@ jobs:
       - name: Publish portable win-x64 executable
         run: dotnet publish src/ChrisRuler/ChrisRuler.csproj --configuration Release --no-restore -p:PublishProfile=win-x64
 
-      - name: Verify published executable
+      - name: Publish folder diagnostic build
+        run: dotnet publish src/ChrisRuler/ChrisRuler.csproj --configuration Release --no-restore -p:PublishProfile=win-x64-folder-diagnostic
+
+      - name: Verify published outputs and record SHA-256
         shell: pwsh
         run: |
-          $publishDirectory = "src/ChrisRuler/bin/publish/win-x64"
-          $executable = Join-Path $publishDirectory "ChrisRuler.exe"
+          $publishDirectories = @(
+            "src/ChrisRuler/bin/publish/win-x64",
+            "src/ChrisRuler/bin/publish/win-x64-folder-diagnostic"
+          )
 
-          Write-Host "Published files:"
-          Get-ChildItem -Path $publishDirectory -File | Format-Table Name, Length
+          foreach ($publishDirectory in $publishDirectories) {
+            $executable = Join-Path $publishDirectory "ChrisRuler.exe"
+            Write-Host "Published files in ${publishDirectory}:"
+            Get-ChildItem -Path $publishDirectory -File | Format-Table Name, Length
 
-          if (-not (Test-Path -Path $executable -PathType Leaf)) {
-            throw "Expected portable executable was not produced: $executable"
+            if (-not (Test-Path -Path $executable -PathType Leaf)) {
+              throw "Expected executable was not produced: $executable"
+            }
+
+            $hash = (Get-FileHash -Path $executable -Algorithm SHA256).Hash.ToLowerInvariant()
+            $hashLine = "$hash  ChrisRuler.exe"
+            Write-Host "SHA-256 (${executable}): $hash"
+            Set-Content -Path (Join-Path $publishDirectory "ChrisRuler.exe.sha256.txt") -Value $hashLine -Encoding ascii
           }
 
       - name: Upload portable executable
         uses: actions/upload-artifact@v4
         with:
           name: ChrisRuler-win-x64
-          path: src/ChrisRuler/bin/publish/win-x64/ChrisRuler.exe
+          path: |
+            src/ChrisRuler/bin/publish/win-x64/ChrisRuler.exe
+            src/ChrisRuler/bin/publish/win-x64/ChrisRuler.exe.sha256.txt
           if-no-files-found: error
 
+      - name: Upload folder diagnostic build
+        uses: actions/upload-artifact@v4
+        with:
+          name: ChrisRuler-win-x64-folder-diagnostic
+          path: src/ChrisRuler/bin/publish/win-x64-folder-diagnostic/
+          if-no-files-found: error
