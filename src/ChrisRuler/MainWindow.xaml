@@ -5,55 +5,72 @@
         Width="800"
         Height="120"
         MinWidth="160"
-        MinHeight="48"
+        MinHeight="56"
         WindowStartupLocation="CenterScreen"
         WindowStyle="None"
         AllowsTransparency="True"
         Background="Transparent"
         Topmost="True"
         ShowInTaskbar="True">
-    <Grid>
-        <Border BorderBrush="#FF0078D4"
-                BorderThickness="4"
-                Background="Transparent" />
+    <Window.Resources>
+        <Style x:Key="RulerButtonStyle" TargetType="Button">
+            <Setter Property="Width" Value="22" />
+            <Setter Property="Height" Value="18" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Background" Value="#2600325A" />
+            <Setter Property="BorderBrush" Value="#59FFFFFF" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Cursor" Value="Arrow" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Focusable" Value="False" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#59003E70" />
+                    <Setter Property="BorderBrush" Value="#A6FFFFFF" />
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#80002545" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
 
-        <!-- These decorative marks are intentionally unitless visual guides. -->
-        <Rectangle Height="4"
-                   VerticalAlignment="Top"
-                   IsHitTestVisible="False">
+    <Grid>
+        <!-- The four rectangles match the native window-region bars: 22/12 DIP
+             horizontally and 10 DIP vertically. Their alpha is 70% (0xB3). -->
+        <Rectangle Height="22" VerticalAlignment="Top" Fill="#B30078B8" IsHitTestVisible="False" />
+        <Rectangle Height="12" VerticalAlignment="Bottom" Fill="#B30078B8" IsHitTestVisible="False" />
+        <Rectangle Width="10" HorizontalAlignment="Left" Margin="0,22,0,12"
+                   Fill="#B30078B8" IsHitTestVisible="False" />
+        <Rectangle Width="10" HorizontalAlignment="Right" Margin="0,22,0,12"
+                   Fill="#B30078B8" IsHitTestVisible="False" />
+
+        <!-- Lightweight highlights add definition without effects or compositor APIs. -->
+        <Border Margin="1" BorderBrush="#66FFFFFF" BorderThickness="1" IsHitTestVisible="False" />
+        <Border Margin="10,22,10,12" BorderBrush="#7300AEEF" BorderThickness="1" IsHitTestVisible="False" />
+
+        <!-- Unitless orientation marks: every fifth mark is longer. -->
+        <Rectangle Height="15" Margin="10,6,58,0" VerticalAlignment="Top" IsHitTestVisible="False">
             <Rectangle.Fill>
-                <DrawingBrush TileMode="Tile"
-                              Viewport="0,0,24,4"
-                              ViewportUnits="Absolute">
+                <DrawingBrush TileMode="Tile" Viewport="0,0,40,15" ViewportUnits="Absolute">
                     <DrawingBrush.Drawing>
-                        <GeometryDrawing Brush="#FF0078D4">
-                            <GeometryDrawing.Pen>
-                                <Pen Brush="#80FFFFFF" Thickness="1" />
-                            </GeometryDrawing.Pen>
-                            <GeometryDrawing.Geometry>
-                                <LineGeometry StartPoint="0.5,1" EndPoint="0.5,4" />
-                            </GeometryDrawing.Geometry>
-                        </GeometryDrawing>
-                    </DrawingBrush.Drawing>
-                </DrawingBrush>
-            </Rectangle.Fill>
-        </Rectangle>
-        <Rectangle Height="4"
-                   VerticalAlignment="Bottom"
-                   IsHitTestVisible="False">
-            <Rectangle.Fill>
-                <DrawingBrush TileMode="Tile"
-                              Viewport="0,0,24,4"
-                              ViewportUnits="Absolute">
-                    <DrawingBrush.Drawing>
-                        <GeometryDrawing Brush="#FF0078D4">
-                            <GeometryDrawing.Pen>
-                                <Pen Brush="#80FFFFFF" Thickness="1" />
-                            </GeometryDrawing.Pen>
-                            <GeometryDrawing.Geometry>
-                                <LineGeometry StartPoint="0.5,0" EndPoint="0.5,3" />
-                            </GeometryDrawing.Geometry>
-                        </GeometryDrawing>
+                        <DrawingGroup>
+                            <GeometryDrawing>
+                                <GeometryDrawing.Pen>
+                                    <Pen Brush="#BFFFFFFF" Thickness="1" />
+                                </GeometryDrawing.Pen>
+                                <GeometryDrawing.Geometry>
+                                    <GeometryGroup>
+                                        <LineGeometry StartPoint="0.5,4" EndPoint="0.5,15" />
+                                        <LineGeometry StartPoint="8.5,9" EndPoint="8.5,15" />
+                                        <LineGeometry StartPoint="16.5,9" EndPoint="16.5,15" />
+                                        <LineGeometry StartPoint="24.5,9" EndPoint="24.5,15" />
+                                        <LineGeometry StartPoint="32.5,9" EndPoint="32.5,15" />
+                                    </GeometryGroup>
+                                </GeometryDrawing.Geometry>
+                            </GeometryDrawing>
+                        </DrawingGroup>
                     </DrawingBrush.Drawing>
                 </DrawingBrush>
             </Rectangle.Fill>
@@ -62,33 +79,22 @@
         <StackPanel Orientation="Horizontal"
                     HorizontalAlignment="Right"
                     VerticalAlignment="Top"
-                    Margin="0,4,4,0">
+                    Margin="0,2,4,0">
             <Button x:Name="NextRowButton"
-                    Width="20"
-                    Height="20"
+                    Style="{StaticResource RulerButtonStyle}"
                     Margin="0,0,2,0"
-                    Padding="0"
-                    Background="#FF0078D4"
-                    BorderThickness="0"
-                    Foreground="White"
-                    FontSize="13"
                     ToolTip="Next row"
                     Click="NextRowButton_Click">▼</Button>
             <Button x:Name="CloseButton"
-                    Width="20"
-                    Height="20"
-                    Padding="0"
-                    BorderThickness="0"
-                    Foreground="White"
-                    FontSize="16"
+                    FontSize="15"
                     ToolTip="Close"
                     Click="CloseButton_Click">
                 <Button.Style>
-                    <Style TargetType="Button">
-                        <Setter Property="Background" Value="#FF0078D4" />
+                    <Style TargetType="Button" BasedOn="{StaticResource RulerButtonStyle}">
                         <Style.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#FFC42B1C" />
+                                <Setter Property="Background" Value="#B3C42B1C" />
+                                <Setter Property="BorderBrush" Value="#CCFFFFFF" />
                             </Trigger>
                         </Style.Triggers>
                     </Style>
