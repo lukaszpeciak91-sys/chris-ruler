@@ -246,8 +246,13 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
                 continue;
             }
 
-            CombineRgn(outerRegion, outerRegion, controlRegion, RgnOr);
+            int controlRegionType = CombineRgn(outerRegion, outerRegion, controlRegion, RgnOr);
             DeleteObject(controlRegion);
+            if (controlRegionType == Error)
+            {
+                DeleteObject(outerRegion);
+                return;
+            }
         }
 
         // Unlike HTTRANSPARENT, a native window-region hole is absent from desktop
