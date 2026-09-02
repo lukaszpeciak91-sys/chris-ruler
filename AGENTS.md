@@ -4,9 +4,9 @@ This file is the authoritative working context for coding agents in this reposit
 
 ## Product intent
 
-Chris Ruler is a tiny Windows desktop overlay used as a visual guide over applications such as spreadsheets.
+Chris Ruler is a tiny Windows row-focus overlay for applications such as spreadsheets.
 
-It is **not** a measurement tool. The core UX is a thin always-on-top rectangular frame with a transparent/click-through center, so the user can keep working in the application underneath.
+It is **not** a measurement tool. The core UX is a substantial always-on-top rectangular mask with a transparent/click-through center: the frame masks neighboring rows while the center exposes the active row and lets the user keep working underneath.
 
 ## MVP requirements
 
@@ -17,7 +17,7 @@ Preserve these unless the task explicitly changes them:
 3. Always-on-top overlay.
 4. Window can be moved.
 5. Window can be resized from every edge and corner.
-6. Visible frame should stay thin, approximately 2–4 px unless a later setting changes it.
+6. The visible frame is intentionally substantial: approximately 30 DIP on top, 22 DIP on the bottom, and 9 DIP on each side.
 7. The center must be visually transparent.
 8. Mouse input through the transparent center must reach the application underneath.
 9. Border/resize interaction must still work reliably.
@@ -41,7 +41,7 @@ Preserve these unless the task explicitly changes them:
 
 This is the highest-risk part of the project.
 
-The desired behavior is **not** a completely click-through window. The center should pass input through, while the thin frame must remain interactive for moving/resizing.
+The desired behavior is **not** a completely click-through window. The active row-view center should pass input through, while the substantial frame must remain interactive for moving/resizing.
 
 When implementing native hit testing:
 
@@ -57,7 +57,7 @@ Do not solve this with a global mouse hook unless an explicit later requirement 
 
 Target a portable executable suitable for copying to another Windows PC and running without an installer.
 
-Use the simplest publish strategy that satisfies this goal. If a self-contained single-file build is used, document the resulting size and any trade-offs rather than adding a custom installer.
+The tested, self-contained folder publish is currently preferred over the single-file build because it passed the real-machine antivirus A/B test. Keep the complete folder together when distributing it. If a single-file build is retained as an alternative, document its size and extraction trade-offs rather than adding a custom installer.
 
 Do not sign, obfuscate, pack, or modify security settings as part of normal development.
 
@@ -97,4 +97,4 @@ A task is done only when:
 
 Follow the phases in `docs/PROJECT_PLAN.md`.
 
-Do not jump ahead to polish or optional features before the basic overlay has passed a real-machine test.
+The basic overlay interaction and folder packaging have passed real-machine testing. Preserve that known-good behavior while making focused UX corrections.

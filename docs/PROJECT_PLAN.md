@@ -2,7 +2,7 @@
 
 This plan defines the delivery order for the first usable Chris Ruler build.
 
-The rule is simple: **get the core window behavior correct first, harden it second, test it on a real machine third, and only then decide what extra features are worth adding.**
+The rule is simple: **preserve the real-machine-tested interaction model while refining Chris Ruler into a focused row guide.**
 
 ## Phase 0 — Documentation and repository baseline
 
@@ -33,7 +33,7 @@ Expected scope:
 - one main overlay window,
 - borderless transparent window setup,
 - always-on-top behavior,
-- simple thin visible frame,
+- a visible frame that can mask neighboring rows,
 - sane app metadata,
 - basic project structure,
 - debug and release builds,
@@ -45,7 +45,7 @@ Exit criteria:
 
 - solution builds cleanly,
 - application launches,
-- overlay renders as a thin frame,
+- overlay renders as a substantial row-focus frame,
 - no installer is required for the intended published build.
 
 ## Phase 2 — Core interaction
@@ -120,9 +120,11 @@ Test at minimum:
 
 Record every issue as an observable symptom, reproduction steps, and expected behavior.
 
-## Phase 5 — Fix test findings
+## Phase 5 — Fix test findings (current)
 
 Goal: fix only issues revealed by the real-machine test or obvious MVP blockers found during review.
+
+The proven baseline can be moved and resized around a spreadsheet, preserves cross-process input through its transparent active-row center, and runs successfully from the self-contained folder publish. Current UX work removes measurement styling and uses an intentional 30 DIP top, 22 DIP bottom, and 9 DIP side mask to obscure neighboring rows.
 
 Use focused branches/PRs. Avoid bundling unrelated polish into bug fixes.
 

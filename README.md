@@ -1,8 +1,8 @@
 # Chris Ruler
 
-A small portable Windows desktop utility for using an on-screen guide while working in applications such as spreadsheets.
+A small portable Windows desktop row-focus guide for applications such as spreadsheets.
 
-Chris Ruler is **not a pixel-measuring ruler**. Its purpose is to create a translucent, always-on-top ruler-style frame that helps the user visually follow a row or area while still being able to interact with the application underneath.
+Chris Ruler is **not a measurement tool**. Its high-opacity graphite frame masks neighboring spreadsheet rows, while its transparent center shows the active row and passes input through to the application underneath.
 
 ## MVP
 
@@ -12,12 +12,12 @@ The first testable version should:
 - stay always on top,
 - be movable,
 - be resizable from all sides and corners,
-- show a practical translucent blue frame with a 26 DIP top ruler, 14 DIP bottom ruler, and 14 DIP sides,
+- show an intentional graphite row mask with a 30 DIP top bar, 22 DIP bottom bar, and 9 DIP sides,
 - keep the center visually transparent,
 - allow mouse interaction through the transparent center to the application underneath,
 - provide compact Close and Next Row controls without blocking the center,
-- provide a broad integrated drag area across the top ruler bar,
-- show clear unitless guide ticks, with a longer orientation mark every fifth tick,
+- provide broad integrated drag areas across the frame,
+- avoid ticks, scales, or other measurement styling,
 - remain simple and unobtrusive.
 
 ## Technical direction
@@ -37,15 +37,16 @@ The application requires the .NET 8 SDK and a Windows-compatible build environme
 dotnet restore
 dotnet build
 dotnet build -c Release
-dotnet publish src/ChrisRuler/ChrisRuler.csproj -p:PublishProfile=win-x64
+dotnet publish src/ChrisRuler/ChrisRuler.csproj -p:PublishProfile=win-x64-folder-diagnostic
 ```
 
-The main publish profile creates an uncompressed, untrimmed, self-contained single-file
-Windows x64 executable in `src/ChrisRuler/bin/publish/win-x64`. It can be copied and run
-without installing the .NET runtime. Native runtime libraries are bundled and extracted
-by the standard .NET app host when the application starts. No packer, obfuscator, custom
-loader, post-build executable rewriting, or ad-hoc signing is used. Self-contained
-publishing makes the output substantially larger than a framework-dependent build.
+The currently preferred, real-machine-tested path is the untrimmed, self-contained folder
+publish in `src/ChrisRuler/bin/publish/win-x64-folder-diagnostic`. Despite the profile's
+legacy diagnostic name, this is the variant that passed the antivirus A/B test. Copy and
+run the complete folder; it does not require an installed .NET runtime. The alternative
+`win-x64` profile creates a self-contained single file that extracts native runtime
+libraries at startup. Neither path uses a packer, obfuscator, custom loader, post-build
+executable rewriting, or ad-hoc signing.
 
 ### CI build for testers
 
@@ -53,8 +54,8 @@ GitHub Actions verifies the Release build on Windows and publishes the
 `ChrisRuler-win-x64` artifact. The artifact contains the portable `ChrisRuler.exe` and a
 SHA-256 text file; CI also prints the hash in its log. A second, clearly separated
 `ChrisRuler-win-x64-folder-diagnostic` artifact is a conventional self-contained folder
-publish with no single-file bundle or native extraction. It is intended only to compare
-antivirus results and must be kept with all of its files.
+publish with no single-file bundle or native extraction. It is the currently preferred
+tested artifact and must be kept with all of its files.
 
 Both builds are currently unsigned. Windows may show an unverified-publisher or
 reputation warning, and corporate policy may still block them; the application does not
@@ -63,26 +64,18 @@ long-term way to establish publisher identity and reputation if distribution bro
 but it cannot guarantee zero antivirus detections. A self-signed certificate should not
 be presented as a SmartScreen or executable-reputation solution.
 
-### Antivirus packaging diagnostic
+### Antivirus packaging result
 
-During real-machine testing, Avast Premium Security has repeatedly quarantined the
-GitHub Actions build as the heuristic detection `Win64:Malware-gen`. This detection has
-not been proven resolved. The two CI artifacts are temporarily produced for controlled
-A/B testing: `ChrisRuler-win-x64` preserves the current single-file/self-extracting
-baseline, while `ChrisRuler-win-x64-folder-diagnostic` contains an untrimmed,
-uncompressed, self-contained folder publish. The comparison is intended to determine
-whether single-file packaging contributes to the detection, rather than to bypass or
-weaken antivirus controls.
+During real-machine A/B testing, Avast Premium Security quarantined the single-file build
+as `Win64:Malware-gen`, while the conventional self-contained folder build ran without a
+detection. The folder artifact is therefore the preferred tested distribution path. This
+result does not guarantee acceptance by other antivirus or corporate security policies.
 
 If a build is reported as malicious, a developer should verify its SHA-256 and submit
 the suspected false positive through that antivirus vendor's official sample/false-
 positive process. Uploading a binary to a vendor or third-party analysis service must be
 an explicit human decision. Users should not be told to disable protection or create
-broad exclusions. Compare the main and folder diagnostic results before deciding whether
-single-file packaging should remain the default. Manual Windows overlay testing and
-external antivirus rescanning are still required; a successful build alone does not
-establish that a detection has been resolved. Do not disable antivirus protection to run
-either diagnostic variant.
+broad exclusions. Do not disable antivirus protection to run either variant.
 
 ## Project documents
 
@@ -94,14 +87,15 @@ either diagnostic variant.
 
 **Phase 5 — first real-machine UX corrections in progress; revised design requires manual Windows validation.**
 
-The ruler uses a thicker, 70%-opaque blue frame with native hit testing for frame movement and resizing. Its center is removed
-from the native window region so input can reach an unrelated application underneath. The top bar is an integrated drag surface, while a narrow outer band and the corners retain resizing.
-The 120 × 54 DIP minimum window size keeps the controls separated and the bars fully
-visible while allowing a 92 × 14 DIP transparent center for short spreadsheet rows.
-The top-right Close button exits normally, while the adjacent Next Row button moves the
-ruler down by its current height and stops at the bottom of the virtual desktop. Subtle
-horizontal ticks alternate regular marks with a longer mark every fifth interval; they are visual guides only and do not represent a measurement scale.
-The native interaction path has been statically reviewed for DPI changes, signed virtual-
-screen coordinates, region ownership/failures, minimum geometry, and window lifecycle.
-Cross-process click-through, resize, and multi-monitor behavior still require the first
-manual Windows test before further features or polish are considered.
+The guide uses an approximately 88%-opaque graphite frame with restrained blue accents.
+Its 30 DIP top, 22 DIP bottom, and 9 DIP side bars intentionally mask neighboring rows.
+The center is removed from the native window region so input can reach an unrelated
+application underneath. The bars are integrated drag surfaces, while a narrow outer band
+and the corners retain resizing. The 120 × 66 DIP minimum keeps a usable transparent
+active-row center between the masks. The top-right Close button exits normally, while the
+adjacent Next Row button moves the guide down by its current height and stops at the bottom
+of the virtual desktop. The UI contains no scale or tick marks.
+
+The baseline cross-process click-through and resize behavior has passed real-machine
+testing. This revised frame geometry and visual treatment still require a focused manual
+Windows regression test, including DPI and multi-monitor coverage.
