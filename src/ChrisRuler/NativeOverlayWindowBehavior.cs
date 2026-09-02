@@ -33,6 +33,7 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
     private const int Error = 0;
     private const int RgnDiff = 4;
     private const int SmYVirtualScreen = 77;
+    private const int SmCxVirtualScreen = 78;
     private const int SmCyVirtualScreen = 79;
     private const uint SwpNoSize = 0x0001;
     private const uint SwpNoZOrder = 0x0004;
@@ -163,7 +164,11 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
 
         int minimumWidth = DipToPixels(window.MinWidth);
         int minimumHeight = DipToPixels(window.MinHeight);
+        int virtualWidth = GetSystemMetrics(SmCxVirtualScreen);
+        int virtualHeight = GetSystemMetrics(SmCyVirtualScreen);
         if (saved.Width < minimumWidth || saved.Height < minimumHeight ||
+            virtualWidth <= 0 || virtualHeight <= 0 ||
+            saved.Width > virtualWidth || saved.Height > virtualHeight ||
             bounds.Right <= bounds.Left || bounds.Bottom <= bounds.Top ||
             MonitorFromRect(ref bounds, MonitorDefaultToNull) == nint.Zero)
         {
