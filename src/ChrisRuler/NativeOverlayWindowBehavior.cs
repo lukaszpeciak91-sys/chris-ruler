@@ -34,9 +34,10 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
     private const uint SwpNoSize = 0x0001;
     private const uint SwpNoZOrder = 0x0004;
     private const uint SwpNoActivate = 0x0010;
-    private const double TopBarHeightDip = 26;
-    private const double BottomBarHeightDip = 14;
-    private const double SideBarWidthDip = 14;
+    // These values define both the native input region and the row mask rendered in XAML.
+    private const double TopBarHeightDip = 30;
+    private const double BottomBarHeightDip = 22;
+    private const double SideBarWidthDip = 9;
     private const double ResizeBandThicknessDip = 3;
     private const double CornerLengthDip = 16;
     private const int IdcSizeAll = 32646;
@@ -115,7 +116,7 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
         int virtualTop = GetSystemMetrics(SmYVirtualScreen);
         int virtualBottom = virtualTop + GetSystemMetrics(SmCyVirtualScreen);
 
-        // Move by one ruler height unless that would cross the virtual desktop's
+        // Move by one guide height unless that would cross the virtual desktop's
         // bottom edge; in that case, stop flush with the edge instead of disappearing.
         int newTop = Math.Max(virtualTop, Math.Min(rect.Top + height, virtualBottom - height));
         SetWindowPos(hwnd, nint.Zero, rect.Left, newTop, 0, 0, SwpNoSize | SwpNoZOrder | SwpNoActivate);
@@ -202,7 +203,7 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
         if ((bottomFrame && x >= width - cornerLength) || (rightFrame && y >= height - cornerLength)) return HtBottomRight;
 
         // Only a narrow outer band resizes. The substantial inner portion of each
-        // ruler bar remains an easy-to-grab caption surface.
+        // frame bar remains an easy-to-grab caption surface.
         if (x < resizeBand) return HtLeft;
         if (x >= width - resizeBand) return HtRight;
         if (y < resizeBand) return HtTop;
