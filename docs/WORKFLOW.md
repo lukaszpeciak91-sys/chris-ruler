@@ -117,6 +117,10 @@ Before treating a build as test-ready:
 - record approximate output size if self-contained,
 - do not claim compatibility with locked-down corporate PCs without testing their policy.
 
+The preferred release profile is `win-x64-folder`, uploaded as `ChrisRuler-win-x64-folder`;
+distribute its complete self-contained folder. The `win-x64` single-file profile is
+diagnostic-only. Both retain SHA-256 generation in CI.
+
 ## Immediate pipeline
 
 Current planned sequence:

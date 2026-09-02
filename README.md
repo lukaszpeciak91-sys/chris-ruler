@@ -15,8 +15,9 @@ The first testable version should:
 - show an intentional graphite row mask with a 30 DIP top bar, 22 DIP bottom bar, and 9 DIP sides,
 - keep the center visually transparent,
 - allow mouse interaction through the transparent center to the application underneath,
-- provide compact Lock, Up, Down, and Close controls without blocking the center,
+- provide compact Lock, Up, Down, Minimize, and Close controls without blocking the center,
 - provide broad integrated drag areas across the frame,
+- show two thin visual-only blue row-alignment lines,
 - avoid ticks, scales, or other measurement styling,
 - remain simple and unobtrusive.
 
@@ -37,13 +38,12 @@ The application requires the .NET 8 SDK and a Windows-compatible build environme
 dotnet restore
 dotnet build
 dotnet build -c Release
-dotnet publish src/ChrisRuler/ChrisRuler.csproj -p:PublishProfile=win-x64-folder-diagnostic
+dotnet publish src/ChrisRuler/ChrisRuler.csproj -p:PublishProfile=win-x64-folder
 ```
 
 The currently preferred, real-machine-tested path is the untrimmed, self-contained folder
-publish in `src/ChrisRuler/bin/publish/win-x64-folder-diagnostic`. Despite the profile's
-legacy diagnostic name, this is the variant that passed the antivirus A/B test. Copy and
-run the complete folder; it does not require an installed .NET runtime. The alternative
+publish in `src/ChrisRuler/bin/publish/win-x64-folder`. This is the variant that passed the antivirus A/B test. Copy and
+distribute the complete folder; it does not require an installed .NET runtime. The alternative
 `win-x64` profile creates a self-contained single file that extracts native runtime
 libraries at startup. Neither path uses a packer, obfuscator, custom loader, post-build
 executable rewriting, or ad-hoc signing.
@@ -51,11 +51,9 @@ executable rewriting, or ad-hoc signing.
 ### CI build for testers
 
 GitHub Actions verifies the Release build on Windows and publishes the
-`ChrisRuler-win-x64` artifact. The artifact contains the portable `ChrisRuler.exe` and a
-SHA-256 text file; CI also prints the hash in its log. A second, clearly separated
-`ChrisRuler-win-x64-folder-diagnostic` artifact is a conventional self-contained folder
-publish with no single-file bundle or native extraction. It is the currently preferred
-tested artifact and must be kept with all of its files.
+`ChrisRuler-win-x64-folder` artifact. The artifact contains the portable `ChrisRuler.exe` and a
+SHA-256 text file; CI also prints the hash in its log. A clearly separated `ChrisRuler-win-x64-single-file-diagnostic` artifact retains the
+single-file build for packaging diagnosis only.
 
 Both builds are currently unsigned. Windows may show an unverified-publisher or
 reputation warning, and corporate policy may still block them; the application does not
@@ -85,20 +83,24 @@ broad exclusions. Do not disable antivirus protection to run either variant.
 
 ## Current phase
 
-**Phase 5 — first real-machine UX corrections in progress; revised design requires manual Windows validation.**
+**Phase 6 — MVP polish and release candidate; combined behavior requires manual Windows validation.**
 
 The guide uses an approximately 88%-opaque graphite frame with restrained blue accents.
 Its 30 DIP top, 22 DIP bottom, and 9 DIP side bars intentionally mask neighboring rows.
 The center is removed from the native window region so input can reach an unrelated
 application underneath. The bars are integrated drag surfaces, while a narrow outer band
 and the corners retain resizing. The 120 × 66 DIP minimum keeps a usable transparent
-active-row center between the masks. The top-right Close button exits normally. The
-adjacent Up and Down buttons move the guide by exactly the transparent-center height and
+active-row center between the masks. The top-right Close button exits normally. The adjacent Minimize button uses normal Windows
+taskbar behavior and restores to the same bounds. The Up and Down buttons move the guide by exactly the transparent-center height and
 stop at the virtual desktop boundaries. The navigation step therefore matches the row
 height selected by resizing the guide. Alt+Up and Alt+Down invoke the same row navigation.
 Locking the guide protects that selected row height by disabling mouse dragging and resizing;
-button and keyboard row navigation, Close, and center click-through remain available until
-the guide is unlocked. The UI contains no scale or tick marks.
+button and keyboard row navigation, Minimize, Close, and center click-through remain available until
+the guide is unlocked. Two static, approximately 1 DIP blue lines at the inner mask edges are a visual alignment
+aid only. The UI contains no scale or tick marks.
+
+Chris Ruler saves its last valid position and size to `%LOCALAPPDATA%\ChrisRuler\window.json`.
+Invalid, inaccessible, or fully off-screen settings are ignored, and Lock state is not saved.
 
 The baseline cross-process click-through and resize behavior has passed real-machine
 testing. This revised frame geometry and visual treatment still require a focused manual

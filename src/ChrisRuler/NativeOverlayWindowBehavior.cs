@@ -31,10 +31,12 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
     private const int Error = 0;
     private const int RgnDiff = 4;
     private const int SmYVirtualScreen = 77;
+    private const int SmCxVirtualScreen = 78;
     private const int SmCyVirtualScreen = 79;
     private const uint SwpNoSize = 0x0001;
     private const uint SwpNoZOrder = 0x0004;
     private const uint SwpNoActivate = 0x0010;
+    private const uint MonitorDefaultToNull = 0;
     // These values define both the native input region and the row mask rendered in XAML.
     private const double TopBarHeightDip = 30;
     private const double BottomBarHeightDip = 22;
@@ -50,6 +52,7 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
 
     private readonly Window window;
     private readonly FrameworkElement[] controls;
+    private readonly WindowGeometryStore geometryStore = new();
     private HwndSource? source;
     private DispatcherOperation? pendingRegionUpdate;
     private nint hwnd;
@@ -57,6 +60,7 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
     private bool moveUpHotkeyRegistered;
     private bool moveDownHotkeyRegistered;
     private nint sizeAllCursor;
+    private WindowGeometry? lastNormalGeometry;
 
     public bool IsLocked { get; set; }
 
@@ -66,6 +70,7 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
         this.controls = controls;
         window.SourceInitialized += OnSourceInitialized;
         window.SizeChanged += OnSizeChanged;
+        window.LocationChanged += OnLocationChanged;
         window.Loaded += OnLoaded;
     }
 
@@ -79,6 +84,7 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
         disposed = true;
         window.SourceInitialized -= OnSourceInitialized;
         window.SizeChanged -= OnSizeChanged;
+        window.LocationChanged -= OnLocationChanged;
         window.Loaded -= OnLoaded;
         pendingRegionUpdate?.Abort();
         pendingRegionUpdate = null;
@@ -110,6 +116,8 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
         }
 
         source.AddHook(WindowProc);
+        RestoreWindowGeometry();
+        CaptureNormalGeometry();
         // RegisterHotKey provides the two deliberate application shortcuts without
         // installing a global keyboard hook or observing any unrelated input.
         moveUpHotkeyRegistered = RegisterHotKey(hwnd, MoveUpHotkeyId, ModAlt, VkUp);
@@ -117,13 +125,85 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
         ApplyFrameRegion();
     }
 
-    private void OnSizeChanged(object sender, SizeChangedEventArgs e) => ScheduleFrameRegionUpdate();
+    private void OnSizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        CaptureNormalGeometry();
+        ScheduleFrameRegionUpdate();
+    }
+
+    private void OnLocationChanged(object? sender, EventArgs e) => CaptureNormalGeometry();
 
     private void OnLoaded(object sender, RoutedEventArgs e) => ApplyFrameRegion();
 
     public void MoveUpOneRow() => MoveOneRow(-1);
 
     public void MoveDownOneRow() => MoveOneRow(1);
+
+    public void SaveWindowGeometry()
+    {
+        // OnClosing runs while the HWND still exists. The cached normal bounds avoid
+        // persisting Windows' iconic coordinates when Close is invoked while minimized.
+        if (disposed || hwnd == nint.Zero)
+        {
+            return;
+        }
+
+        if (window.WindowState == WindowState.Normal && GetWindowRect(hwnd, out Rect rect))
+        {
+            geometryStore.Save(new WindowGeometry(
+                rect.Left, rect.Top, rect.Right - rect.Left, rect.Bottom - rect.Top));
+            return;
+        }
+
+        if (lastNormalGeometry is not null)
+        {
+            geometryStore.Save(lastNormalGeometry);
+        }
+    }
+
+    private void CaptureNormalGeometry()
+    {
+        if (!disposed && hwnd != nint.Zero && window.WindowState == WindowState.Normal &&
+            GetWindowRect(hwnd, out Rect rect))
+        {
+            lastNormalGeometry = new WindowGeometry(
+                rect.Left, rect.Top, rect.Right - rect.Left, rect.Bottom - rect.Top);
+        }
+    }
+
+    private void RestoreWindowGeometry()
+    {
+        WindowGeometry? saved = geometryStore.Load();
+        if (saved is null || saved.Width <= 0 || saved.Height <= 0)
+        {
+            return;
+        }
+
+        var bounds = new Rect
+        {
+            Left = saved.Left,
+            Top = saved.Top,
+            Right = SaturatingAdd(saved.Left, saved.Width),
+            Bottom = SaturatingAdd(saved.Top, saved.Height)
+        };
+
+        int virtualWidth = GetSystemMetrics(SmCxVirtualScreen);
+        int virtualHeight = GetSystemMetrics(SmCyVirtualScreen);
+        if (saved.Width < DipToPixels(window.MinWidth) || saved.Height < DipToPixels(window.MinHeight) ||
+            virtualWidth <= 0 || virtualHeight <= 0 ||
+            saved.Width > virtualWidth || saved.Height > virtualHeight ||
+            bounds.Right <= bounds.Left || bounds.Bottom <= bounds.Top ||
+            MonitorFromRect(ref bounds, MonitorDefaultToNull) == nint.Zero)
+        {
+            return;
+        }
+
+        SetWindowPos(hwnd, nint.Zero, saved.Left, saved.Top, saved.Width, saved.Height,
+            SwpNoZOrder | SwpNoActivate);
+    }
+
+    private static int SaturatingAdd(int value, int increment) =>
+        (int)Math.Clamp((long)value + increment, int.MinValue, int.MaxValue);
 
     private void MoveOneRow(int direction)
     {
@@ -429,6 +509,9 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
 
     [DllImport("user32.dll")]
     private static extern int GetSystemMetrics(int index);
+
+    [DllImport("user32.dll")]
+    private static extern nint MonitorFromRect(ref Rect rect, uint flags);
 
     [DllImport("user32.dll")]
     private static extern bool SetWindowPos(
