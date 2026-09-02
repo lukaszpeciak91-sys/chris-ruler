@@ -9,12 +9,14 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        nativeBehavior = new NativeOverlayWindowBehavior(this, CloseButton, NextRowButton);
+        nativeBehavior = new NativeOverlayWindowBehavior(this, CloseButton, UpRowButton, DownRowButton);
     }
 
     private void CloseButton_Click(object sender, RoutedEventArgs e) => Close();
 
-    private void NextRowButton_Click(object sender, RoutedEventArgs e) => nativeBehavior.MoveDownOneHeight();
+    private void UpRowButton_Click(object sender, RoutedEventArgs e) => nativeBehavior.MoveUpOneRow();
+
+    private void DownRowButton_Click(object sender, RoutedEventArgs e) => nativeBehavior.MoveDownOneRow();
 
     protected override void OnClosed(EventArgs e)
     {

@@ -105,20 +105,30 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
 
     private void OnLoaded(object sender, RoutedEventArgs e) => ApplyFrameRegion();
 
-    public void MoveDownOneHeight()
+    public void MoveUpOneRow() => MoveOneRow(-1);
+
+    public void MoveDownOneRow() => MoveOneRow(1);
+
+    private void MoveOneRow(int direction)
     {
         if (disposed || hwnd == nint.Zero || !GetWindowRect(hwnd, out Rect rect))
         {
             return;
         }
 
+        int width = rect.Right - rect.Left;
         int height = rect.Bottom - rect.Top;
+        FrameGeometry geometry = GetFrameGeometry(width, height);
+        int rowStep = Math.Max(0, height - geometry.TopBar - geometry.BottomBar);
         int virtualTop = GetSystemMetrics(SmYVirtualScreen);
         int virtualBottom = virtualTop + GetSystemMetrics(SmCyVirtualScreen);
+        int maximumTop = Math.Max(virtualTop, virtualBottom - height);
 
-        // Move by one guide height unless that would cross the virtual desktop's
-        // bottom edge; in that case, stop flush with the edge instead of disappearing.
-        int newTop = Math.Max(virtualTop, Math.Min(rect.Top + height, virtualBottom - height));
+        // Native pixel geometry is the source of truth for both the region hole and
+        // navigation. Integer-pixel steps cannot accumulate fractional DIP rounding
+        // error over repeated movements at non-100% display scaling.
+        long requestedTop = (long)rect.Top + (long)direction * rowStep;
+        int newTop = (int)Math.Clamp(requestedTop, virtualTop, maximumTop);
         SetWindowPos(hwnd, nint.Zero, rect.Left, newTop, 0, 0, SwpNoSize | SwpNoZOrder | SwpNoActivate);
     }
 
@@ -179,11 +189,11 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
             return 1; // HTCLIENT lets WPF deliver the button input.
         }
 
-        int maximumInset = Math.Min(width, height) / 2;
-        int leftBar = Math.Min(DipToPixels(SideBarWidthDip), maximumInset);
+        FrameGeometry geometry = GetFrameGeometry(width, height);
+        int leftBar = geometry.SideBar;
         int rightBar = leftBar;
-        int topBar = Math.Min(DipToPixels(TopBarHeightDip), maximumInset);
-        int bottomBar = Math.Min(DipToPixels(BottomBarHeightDip), maximumInset);
+        int topBar = geometry.TopBar;
+        int bottomBar = geometry.BottomBar;
         int resizeBand = Math.Min(DipToPixels(ResizeBandThicknessDip),
             Math.Min(Math.Min(leftBar, rightBar), Math.Min(topBar, bottomBar)));
         int cornerLength = Math.Min(
@@ -230,10 +240,10 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
             return;
         }
 
-        int maximumInset = Math.Min(width, height) / 2;
-        int sideBar = Math.Min(DipToPixels(SideBarWidthDip), maximumInset);
-        int topBar = Math.Min(DipToPixels(TopBarHeightDip), maximumInset);
-        int bottomBar = Math.Min(DipToPixels(BottomBarHeightDip), maximumInset);
+        FrameGeometry geometry = GetFrameGeometry(width, height);
+        int sideBar = geometry.SideBar;
+        int topBar = geometry.TopBar;
+        int bottomBar = geometry.BottomBar;
         nint outerRegion = CreateRectRgn(0, 0, width, height);
         if (outerRegion == nint.Zero)
         {
@@ -294,6 +304,15 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
         return Math.Max(1, (int)Math.Ceiling(dip * dpi / 96.0));
     }
 
+    private FrameGeometry GetFrameGeometry(int width, int height)
+    {
+        int maximumInset = Math.Min(width, height) / 2;
+        return new FrameGeometry(
+            Math.Min(DipToPixels(SideBarWidthDip), maximumInset),
+            Math.Min(DipToPixels(TopBarHeightDip), maximumInset),
+            Math.Min(DipToPixels(BottomBarHeightDip), maximumInset));
+    }
+
     private PixelRect GetControlRect(FrameworkElement control)
     {
         if (!control.IsLoaded || control.ActualWidth <= 0 || control.ActualHeight <= 0)
@@ -315,6 +334,8 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
         public int Height => Bottom - Top;
         public bool Contains(int x, int y) => x >= Left && x < Right && y >= Top && y < Bottom;
     }
+
+    private readonly record struct FrameGeometry(int SideBar, int TopBar, int BottomBar);
 
     [StructLayout(LayoutKind.Sequential)]
     private struct Rect
