@@ -33,12 +33,10 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
     private const int Error = 0;
     private const int RgnDiff = 4;
     private const int SmYVirtualScreen = 77;
-    private const int SmCxVirtualScreen = 78;
     private const int SmCyVirtualScreen = 79;
     private const uint SwpNoSize = 0x0001;
     private const uint SwpNoZOrder = 0x0004;
     private const uint SwpNoActivate = 0x0010;
-    private const uint MonitorDefaultToNull = 0;
     private const double ResizeBandThicknessDip = 3;
     private const double CornerLengthDip = 16;
     private const int IdcSizeAll = 32646;
@@ -51,7 +49,6 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
     private readonly Window window;
     private readonly Action<bool> setResizeEmphasis;
     private readonly FrameworkElement[] controls;
-    private readonly WindowGeometryStore geometryStore = new();
     private HwndSource? source;
     private DispatcherOperation? pendingRegionUpdate;
     private nint hwnd;
@@ -118,7 +115,6 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
         }
 
         source.AddHook(WindowProc);
-        RestoreWindowGeometry();
         // RegisterHotKey provides the two deliberate application shortcuts without
         // installing a global keyboard hook or observing any unrelated input.
         moveUpHotkeyRegistered = RegisterHotKey(hwnd, MoveUpHotkeyId, ModAlt, VkUp);
@@ -133,57 +129,6 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
     public void MoveUpOneRow() => MoveOneRow(-1);
 
     public void MoveDownOneRow() => MoveOneRow(1);
-
-    public void SaveWindowGeometry()
-    {
-        if (!disposed && hwnd != nint.Zero && GetWindowRect(hwnd, out Rect rect))
-        {
-            geometryStore.Save(new WindowGeometry(
-                rect.Left,
-                rect.Top,
-                rect.Right - rect.Left,
-                rect.Bottom - rect.Top));
-        }
-    }
-
-    private void RestoreWindowGeometry()
-    {
-        WindowGeometry? saved = geometryStore.Load();
-        if (saved is null || saved.Width <= 0 || saved.Height <= 0)
-        {
-            return;
-        }
-
-        var bounds = new Rect
-        {
-            Left = saved.Left,
-            Top = saved.Top,
-            Right = SaturatingAdd(saved.Left, saved.Width),
-            Bottom = SaturatingAdd(saved.Top, saved.Height)
-        };
-
-        int minimumWidth = DipToPixels(window.MinWidth);
-        int minimumHeight = DipToPixels(window.MinHeight);
-        int virtualWidth = GetSystemMetrics(SmCxVirtualScreen);
-        int virtualHeight = GetSystemMetrics(SmCyVirtualScreen);
-        if (saved.Width < minimumWidth || saved.Height < minimumHeight ||
-            virtualWidth <= 0 || virtualHeight <= 0 ||
-            saved.Width > virtualWidth || saved.Height > virtualHeight ||
-            bounds.Right <= bounds.Left || bounds.Bottom <= bounds.Top ||
-            MonitorFromRect(ref bounds, MonitorDefaultToNull) == nint.Zero)
-        {
-            return;
-        }
-
-        SetWindowPos(hwnd, nint.Zero, saved.Left, saved.Top, saved.Width, saved.Height,
-            SwpNoZOrder | SwpNoActivate);
-    }
-
-    private static int SaturatingAdd(int value, int increment)
-    {
-        long result = (long)value + increment;
-        return (int)Math.Clamp(result, int.MinValue, int.MaxValue);
-    }
 
     private void MoveOneRow(int direction)
     {
@@ -509,9 +454,6 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
 
     [DllImport("user32.dll")]
     private static extern int GetSystemMetrics(int index);
-
-    [DllImport("user32.dll")]
-    private static extern nint MonitorFromRect(ref Rect rect, uint flags);
 
     [DllImport("user32.dll")]
     private static extern bool SetWindowPos(
