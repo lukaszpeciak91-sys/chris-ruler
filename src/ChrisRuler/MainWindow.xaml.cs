@@ -1,4 +1,3 @@
-using System.ComponentModel;
 using System.Windows;
 
 namespace ChrisRuler;
@@ -34,15 +33,6 @@ public partial class MainWindow : Window
     private void UpRowButton_Click(object sender, RoutedEventArgs e) => nativeBehavior.MoveUpOneRow();
 
     private void DownRowButton_Click(object sender, RoutedEventArgs e) => nativeBehavior.MoveDownOneRow();
-
-    protected override void OnClosing(CancelEventArgs e)
-    {
-        base.OnClosing(e);
-        if (!e.Cancel)
-        {
-            nativeBehavior.SaveWindowGeometry();
-        }
-    }
 
     protected override void OnClosed(EventArgs e)
     {

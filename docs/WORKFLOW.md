@@ -117,12 +117,10 @@ Before treating a build as test-ready:
 - record approximate output size if self-contained,
 - do not claim compatibility with locked-down corporate PCs without testing their policy.
 
-The normal release command is `dotnet publish src/ChrisRuler/ChrisRuler.csproj -p:PublishProfile=win-x64-folder`. Distribute the complete `ChrisRuler-win-x64-folder` CI artifact; the single-file profile is diagnostic only.
-
 ## Immediate pipeline
 
 Current planned sequence:
 
-`docs baseline -> foundation -> core interaction -> pre-test hardening -> real-machine test -> fixes -> MVP polish/release candidate (current)`
+`docs baseline -> foundation -> core interaction -> pre-test hardening -> real-machine test -> fixes -> MVP polish/release candidate`
 
 Do not skip directly to optional polish before the first real-machine test.

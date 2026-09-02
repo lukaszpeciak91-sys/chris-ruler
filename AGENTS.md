@@ -59,8 +59,6 @@ Target a portable executable suitable for copying to another Windows PC and runn
 
 The tested, self-contained folder publish is currently preferred over the single-file build because it passed the real-machine antivirus A/B test. Keep the complete folder together when distributing it. If a single-file build is retained as an alternative, document its size and extraction trade-offs rather than adding a custom installer.
 
-The release profile is `win-x64-folder`; CI exposes it as `ChrisRuler-win-x64-folder`. Window geometry is the only persisted preference and is stored as a small user-local JSON file under `%LOCALAPPDATA%\ChrisRuler`.
-
 Do not sign, obfuscate, pack, or modify security settings as part of normal development.
 
 ## Workflow
@@ -99,4 +97,4 @@ A task is done only when:
 
 Follow the phases in `docs/PROJECT_PLAN.md`.
 
-The project is in release-candidate hardening. The basic overlay interaction and folder packaging have passed real-machine testing; preserve that known-good behavior while making focused corrections.
+The basic overlay interaction and folder packaging have passed real-machine testing. Preserve that known-good behavior while making focused UX corrections.
