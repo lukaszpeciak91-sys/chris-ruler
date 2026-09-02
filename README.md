@@ -13,7 +13,6 @@ The first testable version should:
 - be movable,
 - be resizable from all sides and corners,
 - show an intentional graphite row mask with a 30 DIP top bar, 22 DIP bottom bar, and 9 DIP sides,
-- show subtle blue calibration lines at the transparent center boundaries for row alignment,
 - keep the center visually transparent,
 - allow mouse interaction through the transparent center to the application underneath,
 - provide compact Lock, Up, Down, and Close controls without blocking the center,
@@ -90,8 +89,6 @@ broad exclusions. Do not disable antivirus protection to run either variant.
 
 The guide uses an approximately 88%-opaque graphite frame with restrained blue accents.
 Its 30 DIP top, 22 DIP bottom, and 9 DIP side bars intentionally mask neighboring rows.
-Thin blue lines at the inner mask edges provide a visual alignment aid and become more
-prominent only while the guide is being resized.
 The center is removed from the native window region so input can reach an unrelated
 application underneath. The bars are integrated drag surfaces, while a narrow outer band
 and the corners retain resizing. The 120 × 66 DIP minimum keeps a usable transparent
