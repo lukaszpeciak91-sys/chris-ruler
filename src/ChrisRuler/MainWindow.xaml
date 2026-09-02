@@ -15,16 +15,6 @@
             <Setter Property="Foreground" Value="#FFF2F6F8" />
             <Setter Property="Cursor" Value="Arrow" />
             <Setter Property="Focusable" Value="False" />
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#80509BC7" />
-                    <Setter Property="BorderBrush" Value="#BFD0E9F5" />
-                </Trigger>
-                <Trigger Property="IsPressed" Value="True">
-                    <Setter Property="Background" Value="#CC246C96" />
-                    <Setter Property="BorderBrush" Value="#FFFFFFFF" />
-                </Trigger>
-            </Style.Triggers>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -37,6 +27,16 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#80509BC7" />
+                    <Setter Property="BorderBrush" Value="#BFD0E9F5" />
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#CC246C96" />
+                    <Setter Property="BorderBrush" Value="#FFFFFFFF" />
+                </Trigger>
+            </Style.Triggers>
         </Style>
     </Window.Resources>
 
