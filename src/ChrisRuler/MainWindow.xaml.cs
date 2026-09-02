@@ -9,10 +9,13 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        nativeBehavior = new NativeOverlayWindowBehavior(this, CloseButton, UpRowButton, DownRowButton);
+        nativeBehavior = new NativeOverlayWindowBehavior(this, CloseButton, LockButton, UpRowButton, DownRowButton);
     }
 
     private void CloseButton_Click(object sender, RoutedEventArgs e) => Close();
+
+    private void LockButton_Click(object sender, RoutedEventArgs e) =>
+        nativeBehavior.IsLocked = LockButton.IsChecked == true;
 
     private void UpRowButton_Click(object sender, RoutedEventArgs e) => nativeBehavior.MoveUpOneRow();
 
