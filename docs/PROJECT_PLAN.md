@@ -120,7 +120,7 @@ Test at minimum:
 
 Record every issue as an observable symptom, reproduction steps, and expected behavior.
 
-## Phase 5 — Fix test findings (current)
+## Phase 5 — Fix test findings (complete)
 
 Goal: fix only issues revealed by the real-machine test or obvious MVP blockers found during review.
 
@@ -134,7 +134,7 @@ Exit criteria:
 - regression checks pass,
 - another short real-machine retest confirms the fixes.
 
-## Phase 6 — MVP polish and release candidate
+## Phase 6 — MVP polish and release candidate (current)
 
 Only after the core interaction is proven stable, consider small usability improvements such as:
 
@@ -143,7 +143,8 @@ Only after the core interaction is proven stable, consider small usability impro
 - simple orientation/size presets,
 - position reset,
 - optional close/control affordance,
-- lightweight persistence of last position/size.
+- lightweight persistence of last position/size,
+- normal minimize-to-taskbar support and static visual row-alignment lines.
 
 These are **not requirements yet**. Add them only when they solve a real usability need without compromising the tiny portable nature of the app.
 
