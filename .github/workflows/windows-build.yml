@@ -29,23 +29,23 @@ jobs:
       - name: Build Release
         run: dotnet build ChrisRuler.sln --configuration Release --no-restore
 
-      - name: Publish portable win-x64 executable
-        run: dotnet publish src/ChrisRuler/ChrisRuler.csproj --configuration Release --no-restore -p:PublishProfile=win-x64
+      - name: Publish self-contained release folder
+        run: dotnet publish src/ChrisRuler/ChrisRuler.csproj --configuration Release --no-restore -p:PublishProfile=win-x64-folder
 
-      - name: Publish folder diagnostic build
-        run: dotnet publish src/ChrisRuler/ChrisRuler.csproj --configuration Release --no-restore -p:PublishProfile=win-x64-folder-diagnostic
+      - name: Publish single-file diagnostic build
+        run: dotnet publish src/ChrisRuler/ChrisRuler.csproj --configuration Release --no-restore -p:PublishProfile=win-x64
 
       - name: Verify published outputs and record SHA-256
         shell: pwsh
         run: |
           $publishVariants = @(
             @{
-              Name = "single-file"
-              Directory = "src/ChrisRuler/bin/publish/win-x64"
+              Name = "ChrisRuler-win-x64-folder"
+              Directory = "src/ChrisRuler/bin/publish/win-x64-folder"
             },
             @{
-              Name = "folder-diagnostic"
-              Directory = "src/ChrisRuler/bin/publish/win-x64-folder-diagnostic"
+              Name = "ChrisRuler-win-x64-single-file-diagnostic"
+              Directory = "src/ChrisRuler/bin/publish/win-x64"
             }
           )
 
@@ -65,18 +65,18 @@ jobs:
             Set-Content -Path (Join-Path $publishDirectory "ChrisRuler.exe.sha256.txt") -Value $hashLine -Encoding ascii
           }
 
-      - name: Upload portable executable
+      - name: Upload self-contained release folder
         uses: actions/upload-artifact@v4
         with:
-          name: ChrisRuler-win-x64
+          name: ChrisRuler-win-x64-folder
+          path: src/ChrisRuler/bin/publish/win-x64-folder/
+          if-no-files-found: error
+
+      - name: Upload single-file diagnostic build
+        uses: actions/upload-artifact@v4
+        with:
+          name: ChrisRuler-win-x64-single-file-diagnostic
           path: |
             src/ChrisRuler/bin/publish/win-x64/ChrisRuler.exe
             src/ChrisRuler/bin/publish/win-x64/ChrisRuler.exe.sha256.txt
-          if-no-files-found: error
-
-      - name: Upload folder diagnostic build
-        uses: actions/upload-artifact@v4
-        with:
-          name: ChrisRuler-win-x64-folder-diagnostic
-          path: src/ChrisRuler/bin/publish/win-x64-folder-diagnostic/
           if-no-files-found: error
