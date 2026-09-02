@@ -38,6 +38,45 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
+        <Style x:Key="FocusGuideToggleButtonStyle" TargetType="ToggleButton">
+            <Setter Property="Width" Value="24" />
+            <Setter Property="Height" Value="22" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Background" Value="#332B8AC6" />
+            <Setter Property="BorderBrush" Value="#667FA7BE" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#FFF2F6F8" />
+            <Setter Property="Cursor" Value="Arrow" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="ToolTip" Value="Lock guide" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="2">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                              SnapsToDevicePixels="True" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#80509BC7" />
+                    <Setter Property="BorderBrush" Value="#BFD0E9F5" />
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter Property="Background" Value="#CC246C96" />
+                    <Setter Property="BorderBrush" Value="#FFFFFFFF" />
+                </Trigger>
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter Property="Background" Value="#CC246C96" />
+                    <Setter Property="BorderBrush" Value="#FFD0E9F5" />
+                    <Setter Property="ToolTip" Value="Unlock guide" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
 
     <Grid>
@@ -55,6 +94,27 @@
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top"
                     Margin="0,4,5,0">
+            <ToggleButton x:Name="LockButton" Style="{StaticResource FocusGuideToggleButtonStyle}"
+                          Margin="0,0,4,0" Click="LockButton_Click">
+                <Grid Width="10" Height="12">
+                    <Path Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}"
+                          Data="M 1,5 L 9,5 L 9,12 L 1,12 Z" />
+                    <Path Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ToggleButton}}"
+                          StrokeThickness="1.5" StrokeStartLineCap="Square" StrokeEndLineCap="Square">
+                        <Path.Style>
+                            <Style TargetType="Path">
+                                <Setter Property="Data" Value="M 3,5 L 3,3 C 3,0.5 7,0.5 7,3 L 7,5" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource AncestorType=ToggleButton}}"
+                                                 Value="False">
+                                        <Setter Property="Data" Value="M 3,5 L 3,3 C 3,0.5 7,0.5 7,3 L 7,5 M 7,1 L 9,1" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Path.Style>
+                    </Path>
+                </Grid>
+            </ToggleButton>
             <Button x:Name="UpRowButton" Style="{StaticResource FocusGuideButtonStyle}"
                     Margin="0,0,4,0" ToolTip="Previous row" Click="UpRowButton_Click">
                 <Path Width="8" Height="5" Stretch="Fill"

@@ -15,6 +15,7 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
     private const int WmNcHitTest = 0x0084;
     private const int WmSetCursor = 0x0020;
     private const int WmDpiChanged = 0x02E0;
+    private const int WmHotkey = 0x0312;
 
     private const int HtNowhere = 0;
     private const int HtCaption = 2;
@@ -41,6 +42,11 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
     private const double ResizeBandThicknessDip = 3;
     private const double CornerLengthDip = 16;
     private const int IdcSizeAll = 32646;
+    private const uint ModAlt = 0x0001;
+    private const uint VkUp = 0x26;
+    private const uint VkDown = 0x28;
+    private const int MoveUpHotkeyId = 1;
+    private const int MoveDownHotkeyId = 2;
 
     private readonly Window window;
     private readonly FrameworkElement[] controls;
@@ -48,7 +54,11 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
     private DispatcherOperation? pendingRegionUpdate;
     private nint hwnd;
     private bool disposed;
+    private bool moveUpHotkeyRegistered;
+    private bool moveDownHotkeyRegistered;
     private nint sizeAllCursor;
+
+    public bool IsLocked { get; set; }
 
     public NativeOverlayWindowBehavior(Window window, params FrameworkElement[] controls)
     {
@@ -72,6 +82,8 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
         window.Loaded -= OnLoaded;
         pendingRegionUpdate?.Abort();
         pendingRegionUpdate = null;
+
+        UnregisterHotkeys();
 
         if (source is not null)
         {
@@ -98,6 +110,10 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
         }
 
         source.AddHook(WindowProc);
+        // RegisterHotKey provides the two deliberate application shortcuts without
+        // installing a global keyboard hook or observing any unrelated input.
+        moveUpHotkeyRegistered = RegisterHotKey(hwnd, MoveUpHotkeyId, ModAlt, VkUp);
+        moveDownHotkeyRegistered = RegisterHotKey(hwnd, MoveDownHotkeyId, ModAlt, VkDown);
         ApplyFrameRegion();
     }
 
@@ -138,6 +154,23 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
         {
             handled = true;
             return HitTest(lParam);
+        }
+
+        if (message == WmHotkey)
+        {
+            int hotkeyId = unchecked((int)(long)wParam);
+            if (hotkeyId == MoveUpHotkeyId)
+            {
+                MoveUpOneRow();
+                handled = true;
+            }
+            else if (hotkeyId == MoveDownHotkeyId)
+            {
+                MoveDownOneRow();
+                handled = true;
+            }
+
+            return nint.Zero;
         }
 
         if (message == WmSetCursor && unchecked((short)((long)lParam & 0xFFFF)) == HtCaption)
@@ -187,6 +220,14 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
         if (controls.Any(control => GetControlRect(control).Contains(x, y)))
         {
             return 1; // HTCLIENT lets WPF deliver the button input.
+        }
+
+        // The center is absent from the native window region. While locked, the
+        // remaining frame stays a plain client surface: no caption drag or resize
+        // hit results are exposed, but the controls above remain usable.
+        if (IsLocked)
+        {
+            return 1;
         }
 
         FrameGeometry geometry = GetFrameGeometry(width, height);
@@ -288,6 +329,26 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
             new Action(ApplyPendingFrameRegion));
     }
 
+    private void UnregisterHotkeys()
+    {
+        if (hwnd == nint.Zero)
+        {
+            return;
+        }
+
+        if (moveUpHotkeyRegistered)
+        {
+            UnregisterHotKey(hwnd, MoveUpHotkeyId);
+            moveUpHotkeyRegistered = false;
+        }
+
+        if (moveDownHotkeyRegistered)
+        {
+            UnregisterHotKey(hwnd, MoveDownHotkeyId);
+            moveDownHotkeyRegistered = false;
+        }
+    }
+
     private int DipToPixels(double dip)
     {
         uint dpi = GetDpiForWindow(hwnd);
@@ -357,6 +418,14 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
 
     [DllImport("user32.dll")]
     private static extern nint SetCursor(nint cursor);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool RegisterHotKey(nint hwnd, int id, uint modifiers, uint virtualKey);
+
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool UnregisterHotKey(nint hwnd, int id);
 
     [DllImport("user32.dll")]
     private static extern int GetSystemMetrics(int index);

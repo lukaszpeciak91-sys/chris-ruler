@@ -15,7 +15,7 @@ The first testable version should:
 - show an intentional graphite row mask with a 30 DIP top bar, 22 DIP bottom bar, and 9 DIP sides,
 - keep the center visually transparent,
 - allow mouse interaction through the transparent center to the application underneath,
-- provide compact Up, Down, and Close controls without blocking the center,
+- provide compact Lock, Up, Down, and Close controls without blocking the center,
 - provide broad integrated drag areas across the frame,
 - avoid ticks, scales, or other measurement styling,
 - remain simple and unobtrusive.
@@ -95,7 +95,10 @@ and the corners retain resizing. The 120 × 66 DIP minimum keeps a usable transp
 active-row center between the masks. The top-right Close button exits normally. The
 adjacent Up and Down buttons move the guide by exactly the transparent-center height and
 stop at the virtual desktop boundaries. The navigation step therefore matches the row
-height selected by resizing the guide. The UI contains no scale or tick marks.
+height selected by resizing the guide. Alt+Up and Alt+Down invoke the same row navigation.
+Locking the guide protects that selected row height by disabling mouse dragging and resizing;
+button and keyboard row navigation, Close, and center click-through remain available until
+the guide is unlocked. The UI contains no scale or tick marks.
 
 The baseline cross-process click-through and resize behavior has passed real-machine
 testing. This revised frame geometry and visual treatment still require a focused manual
