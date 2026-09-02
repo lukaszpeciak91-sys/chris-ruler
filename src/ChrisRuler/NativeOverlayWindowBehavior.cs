@@ -16,8 +16,6 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
     private const int WmSetCursor = 0x0020;
     private const int WmDpiChanged = 0x02E0;
     private const int WmHotkey = 0x0312;
-    private const int WmSizing = 0x0214;
-    private const int WmExitSizeMove = 0x0232;
 
     private const int HtNowhere = 0;
     private const int HtCaption = 2;
@@ -37,6 +35,10 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
     private const uint SwpNoSize = 0x0001;
     private const uint SwpNoZOrder = 0x0004;
     private const uint SwpNoActivate = 0x0010;
+    // These values define both the native input region and the row mask rendered in XAML.
+    private const double TopBarHeightDip = 30;
+    private const double BottomBarHeightDip = 22;
+    private const double SideBarWidthDip = 9;
     private const double ResizeBandThicknessDip = 3;
     private const double CornerLengthDip = 16;
     private const int IdcSizeAll = 32646;
@@ -47,7 +49,6 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
     private const int MoveDownHotkeyId = 2;
 
     private readonly Window window;
-    private readonly Action<bool> setResizeEmphasis;
     private readonly FrameworkElement[] controls;
     private HwndSource? source;
     private DispatcherOperation? pendingRegionUpdate;
@@ -56,17 +57,12 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
     private bool moveUpHotkeyRegistered;
     private bool moveDownHotkeyRegistered;
     private nint sizeAllCursor;
-    private bool resizeEmphasisActive;
 
     public bool IsLocked { get; set; }
 
-    public NativeOverlayWindowBehavior(
-        Window window,
-        Action<bool> setResizeEmphasis,
-        params FrameworkElement[] controls)
+    public NativeOverlayWindowBehavior(Window window, params FrameworkElement[] controls)
     {
         this.window = window;
-        this.setResizeEmphasis = setResizeEmphasis;
         this.controls = controls;
         window.SourceInitialized += OnSourceInitialized;
         window.SizeChanged += OnSizeChanged;
@@ -86,7 +82,6 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
         window.Loaded -= OnLoaded;
         pendingRegionUpdate?.Abort();
         pendingRegionUpdate = null;
-        SetResizeEmphasis(false);
 
         UnregisterHotkeys();
 
@@ -155,15 +150,6 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
 
     private nint WindowProc(nint hwnd, int message, nint wParam, nint lParam, ref bool handled)
     {
-        if (message == WmSizing)
-        {
-            SetResizeEmphasis(true);
-        }
-        else if (message == WmExitSizeMove)
-        {
-            SetResizeEmphasis(false);
-        }
-
         if (message == WmNcHitTest)
         {
             handled = true;
@@ -343,17 +329,6 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
             new Action(ApplyPendingFrameRegion));
     }
 
-    private void SetResizeEmphasis(bool isActive)
-    {
-        if (resizeEmphasisActive == isActive)
-        {
-            return;
-        }
-
-        resizeEmphasisActive = isActive;
-        setResizeEmphasis(isActive);
-    }
-
     private void UnregisterHotkeys()
     {
         if (hwnd == nint.Zero)
@@ -394,9 +369,9 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
     {
         int maximumInset = Math.Min(width, height) / 2;
         return new FrameGeometry(
-            Math.Min(DipToPixels(OverlayGeometry.SideBarWidthDip), maximumInset),
-            Math.Min(DipToPixels(OverlayGeometry.TopBarHeightDip), maximumInset),
-            Math.Min(DipToPixels(OverlayGeometry.BottomBarHeightDip), maximumInset));
+            Math.Min(DipToPixels(SideBarWidthDip), maximumInset),
+            Math.Min(DipToPixels(TopBarHeightDip), maximumInset),
+            Math.Min(DipToPixels(BottomBarHeightDip), maximumInset));
     }
 
     private PixelRect GetControlRect(FrameworkElement control)
