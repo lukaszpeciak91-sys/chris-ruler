@@ -36,6 +36,7 @@ public partial class MainWindow : Window
 
     protected override void OnClosed(EventArgs e)
     {
+        nativeBehavior.SaveWindowGeometry();
         nativeBehavior.Dispose();
         base.OnClosed(e);
     }

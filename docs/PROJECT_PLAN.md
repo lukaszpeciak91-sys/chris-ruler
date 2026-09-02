@@ -120,7 +120,7 @@ Test at minimum:
 
 Record every issue as an observable symptom, reproduction steps, and expected behavior.
 
-## Phase 5 — Fix test findings (current)
+## Phase 5 — Fix test findings (complete)
 
 Goal: fix only issues revealed by the real-machine test or obvious MVP blockers found during review.
 
@@ -134,18 +134,18 @@ Exit criteria:
 - regression checks pass,
 - another short real-machine retest confirms the fixes.
 
-## Phase 6 — MVP polish and release candidate
+## Phase 6 — MVP polish and release candidate (current)
 
-Only after the core interaction is proven stable, consider small usability improvements such as:
+The core interaction and preferred folder package have passed initial real-machine testing. Release-candidate work includes restrained improvements such as:
 
 - border color,
 - border thickness,
 - simple orientation/size presets,
 - position reset,
 - optional close/control affordance,
-- lightweight persistence of last position/size.
+- lightweight user-local persistence of last position/size, with safe off-screen recovery.
 
-These are **not requirements yet**. Add them only when they solve a real usability need without compromising the tiny portable nature of the app.
+Keep these improvements small and do not compromise the portable nature of the app.
 
 Release-candidate exit criteria:
 
