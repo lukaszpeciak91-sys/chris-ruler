@@ -11,7 +11,8 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         nativeBehavior = new NativeOverlayWindowBehavior(
-            this, CloseButton, MinimizeButton, LockButton, UpRowButton, DownRowButton);
+            this, ScratchpadTextBox, CopyButton, CloseButton, MinimizeButton, LockButton,
+            UpRowButton, DownRowButton);
     }
 
     private void CloseButton_Click(object sender, RoutedEventArgs e) => Close();
@@ -24,6 +25,14 @@ public partial class MainWindow : Window
     private void DownRowButton_Click(object sender, RoutedEventArgs e) => nativeBehavior.MoveDownOneRow();
 
     private void MinimizeButton_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
+
+    private void CopyButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (ScratchpadTextBox.Text.Length > 0)
+        {
+            Clipboard.SetText(ScratchpadTextBox.Text);
+        }
+    }
 
     protected override void OnClosing(CancelEventArgs e)
     {
