@@ -19,6 +19,60 @@
         <SolidColorBrush x:Key="ControlPressedBrush" Color="#E620658A" />
         <SolidColorBrush x:Key="TextSelectionBrush" Color="#CC4FA2CC" />
         <SolidColorBrush x:Key="TextFocusBorderBrush" Color="#FF7ABDDE" />
+        <Style x:Key="ColorMenuStyle" TargetType="ContextMenu">
+            <Setter Property="Background" Value="#FF24292D" />
+            <Setter Property="BorderBrush" Value="#FF56636B" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Padding" Value="2" />
+            <Setter Property="Foreground" Value="#FFF2F6F8" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ContextMenu">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}" CornerRadius="2">
+                            <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Cycle" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!-- Replacing the system MenuItem template removes its reserved icon/checkmark
+             column while retaining IsChecked as the selection state. -->
+        <Style x:Key="ColorMenuItemStyle" TargetType="MenuItem">
+            <Setter Property="Height" Value="26" />
+            <Setter Property="Padding" Value="8,2" />
+            <Setter Property="Background" Value="#FF24292D" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Foreground" Value="#FFF2F6F8" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="MenuItem">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}" CornerRadius="2">
+                            <ContentPresenter ContentSource="Header" VerticalAlignment="Center"
+                                              SnapsToDevicePixels="True" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsChecked" Value="True">
+                    <Setter Property="Background" Value="#FF334B5A" />
+                    <Setter Property="BorderBrush" Value="#FF82AFC5" />
+                    <Setter Property="FontWeight" Value="SemiBold" />
+                </Trigger>
+                <Trigger Property="IsHighlighted" Value="True">
+                    <Setter Property="Background" Value="#FF3B4850" />
+                    <Setter Property="BorderBrush" Value="#FF718894" />
+                </Trigger>
+            </Style.Triggers>
+        </Style>
         <Style x:Key="FocusGuideButtonStyle" TargetType="Button">
             <Setter Property="Width" Value="24" />
             <Setter Property="Height" Value="22" />
@@ -98,6 +152,8 @@
             <Setter Property="MaxWidth" Value="220" />
             <Setter Property="Height" Value="22" />
             <Setter Property="Padding" Value="5,1" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="Background" Value="{DynamicResource TextInputBackgroundBrush}" />
             <Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
