@@ -6,16 +6,19 @@
         Background="Transparent" Topmost="True" ShowInTaskbar="True">
     <Window.Resources>
         <!-- Window-local resources are replaced when this ruler's theme changes. -->
-        <SolidColorBrush x:Key="AccentBrush" Color="#FF428BB5" />
-        <SolidColorBrush x:Key="CalibrationBrush" Color="#CC428BB5" />
-        <SolidColorBrush x:Key="InnerBorderBrush" Color="#B3428BB5" />
-        <SolidColorBrush x:Key="ControlBackgroundBrush" Color="#332B8AC6" />
-        <SolidColorBrush x:Key="ControlBorderBrush" Color="#667FA7BE" />
-        <SolidColorBrush x:Key="ControlHoverBrush" Color="#80509BC7" />
-        <SolidColorBrush x:Key="ControlHoverBorderBrush" Color="#BFD0E9F5" />
-        <SolidColorBrush x:Key="ControlPressedBrush" Color="#CC246C96" />
-        <SolidColorBrush x:Key="TextSelectionBrush" Color="#CC428BB5" />
-        <SolidColorBrush x:Key="TextFocusBorderBrush" Color="#FF67A9CF" />
+        <SolidColorBrush x:Key="FrameBrush" Color="#E01D3B4C" />
+        <SolidColorBrush x:Key="AccentBrush" Color="#FF58A5CE" />
+        <SolidColorBrush x:Key="CalibrationBrush" Color="#FF86D0F2" />
+        <SolidColorBrush x:Key="InnerBorderBrush" Color="#D94A8DAF" />
+        <SolidColorBrush x:Key="OuterBorderBrush" Color="#A678A9C1" />
+        <SolidColorBrush x:Key="ControlBackgroundBrush" Color="#B3255570" />
+        <SolidColorBrush x:Key="TextInputBackgroundBrush" Color="#E6255570" />
+        <SolidColorBrush x:Key="ControlBorderBrush" Color="#A678A9C1" />
+        <SolidColorBrush x:Key="ControlHoverBrush" Color="#CC387898" />
+        <SolidColorBrush x:Key="ControlHoverBorderBrush" Color="#E67ABDDE" />
+        <SolidColorBrush x:Key="ControlPressedBrush" Color="#E620658A" />
+        <SolidColorBrush x:Key="TextSelectionBrush" Color="#CC4FA2CC" />
+        <SolidColorBrush x:Key="TextFocusBorderBrush" Color="#FF7ABDDE" />
         <Style x:Key="FocusGuideButtonStyle" TargetType="Button">
             <Setter Property="Width" Value="24" />
             <Setter Property="Height" Value="22" />
@@ -45,7 +48,7 @@
                 </Trigger>
                 <Trigger Property="IsPressed" Value="True">
                     <Setter Property="Background" Value="{DynamicResource ControlPressedBrush}" />
-                    <Setter Property="BorderBrush" Value="#FFFFFFFF" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource ControlHoverBorderBrush}" />
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -79,7 +82,7 @@
                 </Trigger>
                 <Trigger Property="IsPressed" Value="True">
                     <Setter Property="Background" Value="{DynamicResource ControlPressedBrush}" />
-                    <Setter Property="BorderBrush" Value="#FFFFFFFF" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource ControlHoverBorderBrush}" />
                 </Trigger>
                 <Trigger Property="IsChecked" Value="True">
                     <Setter Property="Background" Value="{DynamicResource ControlPressedBrush}" />
@@ -96,8 +99,8 @@
             <Setter Property="Height" Value="22" />
             <Setter Property="Padding" Value="5,1" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="Background" Value="#E6292E32" />
-            <Setter Property="BorderBrush" Value="#80606B72" />
+            <Setter Property="Background" Value="{DynamicResource TextInputBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Foreground" Value="#FFF2F6F8" />
             <Setter Property="CaretBrush" Value="#FFF2F6F8" />
@@ -114,12 +117,12 @@
     <Grid>
         <!-- These 30/22/9 DIP bars are intentional row masks. Keep them synchronized
              with NativeOverlayWindowBehavior's geometry constants. -->
-        <Rectangle Height="30" VerticalAlignment="Top" Fill="#E024292D" IsHitTestVisible="False" />
-        <Rectangle Height="22" VerticalAlignment="Bottom" Fill="#E024292D" IsHitTestVisible="False" />
+        <Rectangle Height="30" VerticalAlignment="Top" Fill="{DynamicResource FrameBrush}" IsHitTestVisible="False" />
+        <Rectangle Height="22" VerticalAlignment="Bottom" Fill="{DynamicResource FrameBrush}" IsHitTestVisible="False" />
         <Rectangle Width="9" HorizontalAlignment="Left" Margin="0,30,0,22"
-                   Fill="#E024292D" IsHitTestVisible="False" />
+                   Fill="{DynamicResource FrameBrush}" IsHitTestVisible="False" />
         <Rectangle Width="9" HorizontalAlignment="Right" Margin="0,30,0,22"
-                   Fill="#E024292D" IsHitTestVisible="False" />
+                   Fill="{DynamicResource FrameBrush}" IsHitTestVisible="False" />
 
         <!-- Static visual row-alignment aids; they do not participate in input or geometry. -->
         <Rectangle Height="1" VerticalAlignment="Top" Margin="9,29,9,0"
@@ -127,11 +130,11 @@
         <Rectangle Height="1" VerticalAlignment="Bottom" Margin="9,0,9,21"
                    Fill="{DynamicResource CalibrationBrush}" IsHitTestVisible="False" />
 
-        <Border Margin="1" BorderBrush="#665F6A71" BorderThickness="1" IsHitTestVisible="False" />
+        <Border Margin="1" BorderBrush="{DynamicResource OuterBorderBrush}" BorderThickness="1" IsHitTestVisible="False" />
         <Border Margin="9,30,9,22" BorderBrush="{DynamicResource InnerBorderBrush}" BorderThickness="1" IsHitTestVisible="False" />
 
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top"
-                    Margin="0,4,5,0">
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top"
+                    Margin="5,4,0,0">
             <Button x:Name="ColorSelectorButton" Style="{StaticResource FocusGuideButtonStyle}"
                     Margin="0,0,4,0" ToolTip="Change color" Click="ColorSelectorButton_Click">
                 <Grid Width="12" Height="12">
@@ -144,13 +147,17 @@
                      Margin="0,0,4,0" MaxLines="1" TextWrapping="NoWrap"
                      SpellCheck.IsEnabled="False" />
             <Button x:Name="CopyButton" Style="{StaticResource FocusGuideButtonStyle}"
-                    Margin="0,0,4,0" ToolTip="Copy text" Click="CopyButton_Click">
+                    ToolTip="Copy text" Click="CopyButton_Click">
                 <Grid Width="11" Height="12">
                     <Path Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                           StrokeThickness="1" StrokeLineJoin="Miter"
                           Data="M 3.5,0.5 L 10.5,0.5 L 10.5,8.5 L 8.5,8.5 M 7.5,3.5 L 7.5,11.5 L 0.5,11.5 L 0.5,3.5 Z" />
                 </Grid>
             </Button>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top"
+                    Margin="0,4,5,0">
             <ToggleButton x:Name="LockButton" Style="{StaticResource FocusGuideToggleButtonStyle}"
                           Margin="0,0,4,0" Click="LockButton_Click">
                 <Grid Width="10" Height="12">
@@ -190,21 +197,8 @@
                       Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                       Data="M 0,0 L 8,0 L 8,2 L 0,2 Z" />
             </Button>
-            <Button x:Name="CloseButton" ToolTip="Close" Click="CloseButton_Click">
-                <Button.Style>
-                    <Style TargetType="Button" BasedOn="{StaticResource FocusGuideButtonStyle}">
-                        <Style.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#CC9E342D" />
-                                <Setter Property="BorderBrush" Value="#FFF0B4AF" />
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="Background" Value="#FF74231E" />
-                                <Setter Property="BorderBrush" Value="#FFFFFFFF" />
-                            </Trigger>
-                        </Style.Triggers>
-                    </Style>
-                </Button.Style>
+            <Button x:Name="CloseButton" Style="{StaticResource FocusGuideButtonStyle}"
+                    ToolTip="Close" Click="CloseButton_Click">
                 <Path Width="8" Height="8" Stretch="Fill"
                       Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                       StrokeThickness="1.5" StrokeStartLineCap="Square" StrokeEndLineCap="Square"
