@@ -236,13 +236,13 @@
                 </Grid>
             </ToggleButton>
             <Button x:Name="UpRowButton" Style="{StaticResource FocusGuideButtonStyle}"
-                    Margin="0,0,4,0" ToolTip="Previous row" Click="UpRowButton_Click">
+                    Margin="0,0,4,0" ToolTip="Previous row (Alt+Up)" Click="UpRowButton_Click">
                 <Path Width="8" Height="5" Stretch="Fill"
                       Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                       Data="M 0,5 L 8,5 L 4,0 Z" />
             </Button>
             <Button x:Name="DownRowButton" Style="{StaticResource FocusGuideButtonStyle}"
-                    Margin="0,0,4,0" ToolTip="Next row" Click="DownRowButton_Click">
+                    Margin="0,0,4,0" ToolTip="Next row (Alt+Down)" Click="DownRowButton_Click">
                 <Path Width="8" Height="5" Stretch="Fill"
                       Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                       Data="M 0,0 L 8,0 L 4,5 Z" />
@@ -264,7 +264,7 @@
 
         <Button x:Name="NewRulerButton" Style="{StaticResource FocusGuideButtonStyle}"
                 Width="20" Height="18" HorizontalAlignment="Right" VerticalAlignment="Bottom"
-                Margin="0,0,5,2" ToolTip="New ruler" Click="NewRulerButton_Click">
+                Margin="0,0,5,2" ToolTip="New ruler (Ctrl+Alt+R)" Click="NewRulerButton_Click">
             <Path Width="10" Height="10" Stretch="Fill"
                   Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
                   StrokeThickness="1.5" StrokeStartLineCap="Square" StrokeEndLineCap="Square"
