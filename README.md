@@ -16,6 +16,7 @@ The first testable version should:
 - keep the center visually transparent,
 - allow mouse interaction through the transparent center to the application underneath,
 - provide compact Lock, Up, Down, Minimize, and Close controls without blocking the center,
+- provide a compact scratchpad text field and a button that copies its contents to the clipboard,
 - provide broad integrated drag areas across the frame,
 - show two thin visual-only blue row-alignment lines,
 - avoid ticks, scales, or other measurement styling,
@@ -95,7 +96,7 @@ taskbar behavior and restores to the same bounds. The Up and Down buttons move t
 stop at the virtual desktop boundaries. The navigation step therefore matches the row
 height selected by resizing the guide. Alt+Up and Alt+Down invoke the same row navigation.
 Locking the guide protects that selected row height by disabling mouse dragging and resizing;
-button and keyboard row navigation, Minimize, Close, and center click-through remain available until
+button and keyboard row navigation, the scratchpad and its Copy button, Minimize, Close, and center click-through remain available until
 the guide is unlocked. Two static, approximately 1 DIP blue lines at the inner mask edges are a visual alignment
 aid only. The UI contains no scale or tick marks.
 
