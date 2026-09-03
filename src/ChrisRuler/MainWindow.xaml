@@ -1,7 +1,7 @@
 <Window x:Class="ChrisRuler.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Chris Ruler" Width="800" Height="120" MinWidth="370" MinHeight="66"
+        Title="Chris Ruler" Width="800" Height="120" MinWidth="80" MinHeight="66"
         WindowStartupLocation="CenterScreen" WindowStyle="None" AllowsTransparency="True"
         Background="Transparent" Topmost="True" ShowInTaskbar="True">
     <Window.Resources>

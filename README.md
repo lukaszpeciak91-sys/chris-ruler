@@ -91,8 +91,10 @@ The guide uses an approximately 88%-opaque glass-like frame, with Graphite, Blue
 Its 30 DIP top, 22 DIP bottom, and 9 DIP side bars intentionally mask neighboring rows.
 The center is removed from the native window region so input can reach an unrelated
 application underneath. The bars are integrated drag surfaces, while a narrow outer band
-and the corners retain resizing. The 120 × 66 DIP minimum keeps a usable transparent
-active-row center between the masks. The top-right Close button exits normally. The adjacent Minimize button uses normal Windows
+and the corners retain resizing. The 80 × 66 DIP minimum keeps a usable transparent
+active-row center between the masks. As an individual ruler narrows, lower-priority controls
+progressively hide without shrinking; Close remains available at the top-right and New Ruler
+remains available at the bottom-right. The top-right Close button exits normally. The adjacent Minimize button uses normal Windows
 taskbar behavior and restores to the same bounds. The Up and Down buttons move the guide by exactly the transparent-center height and
 stop at the virtual desktop boundaries. The navigation step therefore matches the row
 height selected by resizing the guide. Alt+Up and Alt+Down invoke the same row navigation.

@@ -477,7 +477,8 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
 
     private PixelRect GetControlRect(FrameworkElement control)
     {
-        if (!control.IsLoaded || control.ActualWidth <= 0 || control.ActualHeight <= 0)
+        if (!control.IsLoaded || !control.IsVisible ||
+            control.ActualWidth <= 0 || control.ActualHeight <= 0)
         {
             return default;
         }
