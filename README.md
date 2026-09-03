@@ -2,7 +2,7 @@
 
 A small portable Windows desktop row-focus guide for applications such as spreadsheets.
 
-Chris Ruler is **not a measurement tool**. Its high-opacity graphite frame masks neighboring spreadsheet rows, while its transparent center shows the active row and passes input through to the application underneath.
+Chris Ruler is **not a measurement tool**. Its high-opacity, theme-colored glass frame masks neighboring spreadsheet rows, while its transparent center shows the active row and passes input through to the application underneath.
 
 ## MVP
 
@@ -12,14 +12,14 @@ The first testable version should:
 - stay always on top,
 - be movable,
 - be resizable from all sides and corners,
-- show an intentional graphite row mask with a 30 DIP top bar, 22 DIP bottom bar, and 9 DIP sides,
+- show an intentional translucent row mask with a 30 DIP top bar, 22 DIP bottom bar, and 9 DIP sides,
 - keep the center visually transparent,
 - allow mouse interaction through the transparent center to the application underneath,
 - provide compact Lock, Up, Down, Minimize, and Close controls without blocking the center,
-- provide a compact scratchpad text field and a button that copies its contents to the clipboard,
-- provide a compact color selector with several restrained accent themes,
+- provide a compact left-aligned color selector, scratchpad text field, and Copy button,
+- provide five restrained themes that recolor the whole translucent frame,
 - provide broad integrated drag areas across the frame,
-- show two thin visual-only accent-colored row-alignment lines,
+- show two thin visual-only row-alignment lines in a brighter matching theme color,
 - avoid ticks, scales, or other measurement styling,
 - remain simple and unobtrusive.
 
@@ -87,7 +87,7 @@ broad exclusions. Do not disable antivirus protection to run either variant.
 
 **Phase 6 — MVP polish and release candidate; combined behavior requires manual Windows validation.**
 
-The guide uses an approximately 88%-opaque graphite frame with restrained blue accents.
+The guide uses an approximately 88%-opaque glass-like frame, with Blue, Green, Amber, Red, and Purple themes that recolor the complete mask and its coordinated controls.
 Its 30 DIP top, 22 DIP bottom, and 9 DIP side bars intentionally mask neighboring rows.
 The center is removed from the native window region so input can reach an unrelated
 application underneath. The bars are integrated drag surfaces, while a narrow outer band
@@ -100,10 +100,10 @@ The application architecture supports multiple rulers in one process. These glob
 registered once for the process and routed to the last ruler the user interacted with; that ruler
 remains the target after focus returns to the underlying application.
 Locking the guide protects that selected row height by disabling mouse dragging and resizing;
-button and keyboard row navigation, the scratchpad and its Copy button, Minimize, Close, and center click-through remain available until
-the guide is unlocked. A compact selector to the left of the scratchpad offers Blue, Green, Amber, Red, and Purple
-accents while retaining the graphite frame; the choice applies only to that running ruler window and is not persisted.
-The selector remains available while the guide is locked. Two static, approximately 1 DIP accent-colored lines at the inner mask edges are a visual alignment
+button and keyboard row navigation, the left-side scratchpad and its Copy button, Minimize, Close, and center click-through remain available until
+the guide is unlocked. A compact selector immediately to the left of the scratchpad offers Blue, Green, Amber, Red, and Purple
+frame themes; the choice applies only to that running ruler window and is not persisted.
+The selector remains available while the guide is locked. Two static, approximately 1 DIP lines in a brighter matching theme color at the inner mask edges are a visual alignment
 aid only. The UI contains no scale or tick marks.
 
 Chris Ruler saves its last valid position and size to `%LOCALAPPDATA%\ChrisRuler\window.json`.

@@ -78,7 +78,7 @@ public partial class MainWindow : Window
                 Width = 10,
                 Height = 10,
                 Margin = new Thickness(0, 0, 7, 0),
-                Fill = theme.Brush()
+                Fill = theme.BrushFor(theme.Highlight)
             });
             header.Children.Add(new TextBlock { Text = theme.Name });
 
@@ -112,16 +112,19 @@ public partial class MainWindow : Window
 
     private void ApplyTheme(ColorTheme theme)
     {
-        Resources["AccentBrush"] = theme.Brush();
-        Resources["CalibrationBrush"] = theme.Brush(0xCC);
-        Resources["InnerBorderBrush"] = theme.Brush(0xB3);
-        Resources["ControlBackgroundBrush"] = theme.ControlBrush(0x33);
-        Resources["ControlBorderBrush"] = theme.BrushFor(theme.ControlBorder, 0x66);
-        Resources["ControlHoverBrush"] = theme.BrushFor(theme.HoverAccent, 0x80);
-        Resources["ControlHoverBorderBrush"] = theme.BrushFor(theme.HoverBorder, 0xBF);
-        Resources["ControlPressedBrush"] = theme.BrushFor(theme.PressedAccent, 0xCC);
-        Resources["TextSelectionBrush"] = theme.Brush(0xCC);
-        Resources["TextFocusBorderBrush"] = theme.FocusBrush();
+        Resources["FrameBrush"] = theme.BrushFor(theme.Frame, 0xE0);
+        Resources["AccentBrush"] = theme.BrushFor(theme.Highlight);
+        Resources["CalibrationBrush"] = theme.BrushFor(theme.Calibration);
+        Resources["InnerBorderBrush"] = theme.BrushFor(theme.InnerGuide, 0xD9);
+        Resources["OuterBorderBrush"] = theme.BrushFor(theme.ControlBorder, 0xA6);
+        Resources["ControlBackgroundBrush"] = theme.BrushFor(theme.ControlBackground, 0xB3);
+        Resources["TextInputBackgroundBrush"] = theme.BrushFor(theme.ControlBackground, 0xE6);
+        Resources["ControlBorderBrush"] = theme.BrushFor(theme.ControlBorder, 0xA6);
+        Resources["ControlHoverBrush"] = theme.BrushFor(theme.ControlHover, 0xCC);
+        Resources["ControlHoverBorderBrush"] = theme.BrushFor(theme.FocusBorder, 0xE6);
+        Resources["ControlPressedBrush"] = theme.BrushFor(theme.ControlPressed, 0xE6);
+        Resources["TextSelectionBrush"] = theme.BrushFor(theme.SelectionAccent, 0xCC);
+        Resources["TextFocusBorderBrush"] = theme.BrushFor(theme.FocusBorder);
     }
 
     protected override void OnClosing(CancelEventArgs e)
