@@ -9,6 +9,15 @@ namespace ChrisRuler;
 
 public partial class MainWindow : Window
 {
+    // Each threshold includes the fixed-width controls, margins, and a small gap
+    // between the left- and right-aligned groups at that responsive state.
+    private const double ScratchpadVisibleWidth = 370;
+    private const double CopyVisibleWidth = 210;
+    private const double ColorSelectorVisibleWidth = 180;
+    private const double MinimizeVisibleWidth = 150;
+    private const double LockVisibleWidth = 120;
+    private const double RowButtonsVisibleWidth = 90;
+
     private readonly NativeOverlayWindowBehavior nativeBehavior;
     private readonly RulerCoordinator coordinator;
     private readonly bool ownsGeometryPersistence;
@@ -27,6 +36,8 @@ public partial class MainWindow : Window
         InitializeComponent();
         ApplyTheme(selectedTheme);
         BuildColorMenu();
+        SizeChanged += OnResponsiveSizeChanged;
+        UpdateResponsiveControlVisibility(Width);
         nativeBehavior = new NativeOverlayWindowBehavior(
             this, ownsGeometryPersistence, initialGeometry, MarkActive,
             ColorSelectorButton, ScratchpadTextBox, CopyButton, CloseButton, MinimizeButton, LockButton,
@@ -63,6 +74,25 @@ public partial class MainWindow : Window
     private void NewRulerButton_Click(object sender, RoutedEventArgs e) => coordinator.CreateNewRuler();
 
     private void OnActiveRulerChanged(object? sender, EventArgs e) => UpdateActiveAppearance();
+
+    private void OnResponsiveSizeChanged(object sender, SizeChangedEventArgs e) =>
+        UpdateResponsiveControlVisibility(e.NewSize.Width);
+
+    private void UpdateResponsiveControlVisibility(double width)
+    {
+        ScratchpadTextBox.Visibility = VisibilityForWidth(width, ScratchpadVisibleWidth);
+        CopyButton.Visibility = VisibilityForWidth(width, CopyVisibleWidth);
+        ColorSelectorButton.Visibility = VisibilityForWidth(width, ColorSelectorVisibleWidth);
+        MinimizeButton.Visibility = VisibilityForWidth(width, MinimizeVisibleWidth);
+        LockButton.Visibility = VisibilityForWidth(width, LockVisibleWidth);
+
+        Visibility rowButtonsVisibility = VisibilityForWidth(width, RowButtonsVisibleWidth);
+        UpRowButton.Visibility = rowButtonsVisibility;
+        DownRowButton.Visibility = rowButtonsVisibility;
+    }
+
+    private static Visibility VisibilityForWidth(double width, double threshold) =>
+        width >= threshold ? Visibility.Visible : Visibility.Collapsed;
 
     private void UpdateActiveAppearance()
     {
@@ -168,6 +198,7 @@ public partial class MainWindow : Window
 
     protected override void OnClosed(EventArgs e)
     {
+        SizeChanged -= OnResponsiveSizeChanged;
         PreviewMouseDown -= OnPreviewMouseDown;
         coordinator.ActiveRulerChanged -= OnActiveRulerChanged;
         nativeBehavior.Dispose();
