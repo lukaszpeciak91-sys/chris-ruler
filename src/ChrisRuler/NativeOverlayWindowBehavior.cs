@@ -32,6 +32,7 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
     private const int Error = 0;
     private const int RgnDiff = 4;
     private const int SmYVirtualScreen = 77;
+    private const int SmXVirtualScreen = 76;
     private const int SmCxVirtualScreen = 78;
     private const int SmCyVirtualScreen = 79;
     private const uint SwpNoSize = 0x0001;
@@ -45,10 +46,12 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
     private const double ResizeBandThicknessDip = 3;
     private const double CornerLengthDip = 16;
     private const int IdcSizeAll = 32646;
+    private const int CloneOffsetPixels = 28;
 
     private readonly Window window;
     private readonly FrameworkElement[] controls;
     private readonly bool ownsGeometryPersistence;
+    private readonly WindowGeometry? initialGeometry;
     private readonly Action markActive;
     private readonly WindowGeometryStore geometryStore = new();
     private HwndSource? source;
@@ -63,11 +66,13 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
     public NativeOverlayWindowBehavior(
         Window window,
         bool ownsGeometryPersistence,
+        WindowGeometry? initialGeometry,
         Action markActive,
         params FrameworkElement[] controls)
     {
         this.window = window;
         this.ownsGeometryPersistence = ownsGeometryPersistence;
+        this.initialGeometry = initialGeometry;
         this.markActive = markActive;
         this.controls = controls;
         window.SourceInitialized += OnSourceInitialized;
@@ -116,7 +121,11 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
         }
 
         source.AddHook(WindowProc);
-        if (ownsGeometryPersistence)
+        if (initialGeometry is not null)
+        {
+            ApplyInitialGeometry(initialGeometry);
+        }
+        else if (ownsGeometryPersistence)
         {
             RestoreWindowGeometry();
         }
@@ -137,6 +146,30 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
     public void MoveUpOneRow() => MoveOneRow(-1);
 
     public void MoveDownOneRow() => MoveOneRow(1);
+
+    public WindowGeometry? GetOffsetCloneGeometry()
+    {
+        WindowGeometry? geometry = GetCurrentNormalGeometry();
+        if (geometry is null)
+        {
+            return null;
+        }
+
+        int virtualLeft = GetSystemMetrics(SmXVirtualScreen);
+        int virtualTop = GetSystemMetrics(SmYVirtualScreen);
+        int virtualWidth = GetSystemMetrics(SmCxVirtualScreen);
+        int virtualHeight = GetSystemMetrics(SmCyVirtualScreen);
+        if (virtualWidth <= 0 || virtualHeight <= 0)
+        {
+            return null;
+        }
+
+        int maximumLeft = Math.Max(virtualLeft, SaturatingAdd(virtualLeft, virtualWidth - geometry.Width));
+        int maximumTop = Math.Max(virtualTop, SaturatingAdd(virtualTop, virtualHeight - geometry.Height));
+        int left = OffsetAndClamp(geometry.Left, virtualLeft, maximumLeft);
+        int top = OffsetAndClamp(geometry.Top, virtualTop, maximumTop);
+        return new WindowGeometry(left, top, geometry.Width, geometry.Height);
+    }
 
     public void SaveWindowGeometry()
     {
@@ -168,6 +201,26 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
             lastNormalGeometry = new WindowGeometry(
                 rect.Left, rect.Top, rect.Right - rect.Left, rect.Bottom - rect.Top);
         }
+    }
+
+    private WindowGeometry? GetCurrentNormalGeometry()
+    {
+        CaptureNormalGeometry();
+        return lastNormalGeometry;
+    }
+
+    private static int OffsetAndClamp(int coordinate, int minimum, int maximum)
+    {
+        int forward = (int)Math.Clamp((long)coordinate + CloneOffsetPixels, minimum, maximum);
+        return forward != coordinate
+            ? forward
+            : (int)Math.Clamp((long)coordinate - CloneOffsetPixels, minimum, maximum);
+    }
+
+    private void ApplyInitialGeometry(WindowGeometry geometry)
+    {
+        SetWindowPos(hwnd, nint.Zero, geometry.Left, geometry.Top, geometry.Width, geometry.Height,
+            SwpNoZOrder | SwpNoActivate);
     }
 
     private void RestoreWindowGeometry()

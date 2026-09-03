@@ -98,7 +98,11 @@ stop at the virtual desktop boundaries. The navigation step therefore matches th
 height selected by resizing the guide. Alt+Up and Alt+Down invoke the same row navigation.
 The application architecture supports multiple rulers in one process. These global shortcuts are
 registered once for the process and routed to the last ruler the user interacted with; that ruler
-remains the target after focus returns to the underlying application.
+remains the target after focus returns to the underlying application. The target ruler keeps full-strength
+controls and accents, while other rulers remain useful and fully visible with subtly de-emphasized details.
+The bottom-right **+** button and the process-wide **Ctrl+Alt+R** shortcut both create another ruler.
+New rulers inherit the target ruler's size, nearby position, and color theme, but start unlocked with an
+empty scratchpad. **Alt+Up** and **Alt+Down** move only the current target ruler.
 Locking the guide protects that selected row height by disabling mouse dragging and resizing;
 button and keyboard row navigation, the left-side scratchpad and its Copy button, Minimize, Close, and center click-through remain available until
 the guide is unlocked. A compact selector immediately to the left of the scratchpad offers Blue, Green, Amber, Red, and Purple
