@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
+using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
 namespace ChrisRuler;
@@ -34,6 +35,9 @@ public partial class MainWindow : Window
         this.ownsGeometryPersistence = ownsGeometryPersistence;
         this.selectedTheme = selectedTheme;
         InitializeComponent();
+#if CHRIS_RULER_ICON
+        Icon = BitmapFrame.Create(new Uri("pack://application:,,,/Assets/ChrisRuler.ico"));
+#endif
         ApplyTheme(selectedTheme);
         BuildColorMenu();
         SizeChanged += OnResponsiveSizeChanged;

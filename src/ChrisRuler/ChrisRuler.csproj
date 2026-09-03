@@ -15,4 +15,14 @@
     <Copyright>Copyright © 2026 Chris Ruler contributors</Copyright>
     <Version>0.1.0</Version>
   </PropertyGroup>
+
+  <!-- The release icon is supplied separately by the repository owner. -->
+  <PropertyGroup Condition="Exists('Assets\ChrisRuler.ico')">
+    <ApplicationIcon>Assets\ChrisRuler.ico</ApplicationIcon>
+    <DefineConstants>$(DefineConstants);CHRIS_RULER_ICON</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup Condition="Exists('Assets\ChrisRuler.ico')">
+    <Resource Include="Assets\ChrisRuler.ico" />
+  </ItemGroup>
 </Project>
