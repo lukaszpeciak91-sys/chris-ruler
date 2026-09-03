@@ -17,8 +17,9 @@ The first testable version should:
 - allow mouse interaction through the transparent center to the application underneath,
 - provide compact Lock, Up, Down, Minimize, and Close controls without blocking the center,
 - provide a compact scratchpad text field and a button that copies its contents to the clipboard,
+- provide a compact color selector with several restrained accent themes,
 - provide broad integrated drag areas across the frame,
-- show two thin visual-only blue row-alignment lines,
+- show two thin visual-only accent-colored row-alignment lines,
 - avoid ticks, scales, or other measurement styling,
 - remain simple and unobtrusive.
 
@@ -97,7 +98,9 @@ stop at the virtual desktop boundaries. The navigation step therefore matches th
 height selected by resizing the guide. Alt+Up and Alt+Down invoke the same row navigation.
 Locking the guide protects that selected row height by disabling mouse dragging and resizing;
 button and keyboard row navigation, the scratchpad and its Copy button, Minimize, Close, and center click-through remain available until
-the guide is unlocked. Two static, approximately 1 DIP blue lines at the inner mask edges are a visual alignment
+the guide is unlocked. A compact selector to the left of the scratchpad offers Blue, Green, Amber, Red, and Purple
+accents while retaining the graphite frame; the choice applies only to that running ruler window and is not persisted.
+The selector remains available while the guide is locked. Two static, approximately 1 DIP accent-colored lines at the inner mask edges are a visual alignment
 aid only. The UI contains no scale or tick marks.
 
 Chris Ruler saves its last valid position and size to `%LOCALAPPDATA%\ChrisRuler\window.json`.

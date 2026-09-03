@@ -5,12 +5,23 @@
         WindowStartupLocation="CenterScreen" WindowStyle="None" AllowsTransparency="True"
         Background="Transparent" Topmost="True" ShowInTaskbar="True">
     <Window.Resources>
+        <!-- Window-local resources are replaced when this ruler's theme changes. -->
+        <SolidColorBrush x:Key="AccentBrush" Color="#FF428BB5" />
+        <SolidColorBrush x:Key="CalibrationBrush" Color="#CC428BB5" />
+        <SolidColorBrush x:Key="InnerBorderBrush" Color="#B3428BB5" />
+        <SolidColorBrush x:Key="ControlBackgroundBrush" Color="#332B8AC6" />
+        <SolidColorBrush x:Key="ControlBorderBrush" Color="#667FA7BE" />
+        <SolidColorBrush x:Key="ControlHoverBrush" Color="#80509BC7" />
+        <SolidColorBrush x:Key="ControlHoverBorderBrush" Color="#BFD0E9F5" />
+        <SolidColorBrush x:Key="ControlPressedBrush" Color="#CC246C96" />
+        <SolidColorBrush x:Key="TextSelectionBrush" Color="#CC428BB5" />
+        <SolidColorBrush x:Key="TextFocusBorderBrush" Color="#FF67A9CF" />
         <Style x:Key="FocusGuideButtonStyle" TargetType="Button">
             <Setter Property="Width" Value="24" />
             <Setter Property="Height" Value="22" />
             <Setter Property="Padding" Value="0" />
-            <Setter Property="Background" Value="#332B8AC6" />
-            <Setter Property="BorderBrush" Value="#667FA7BE" />
+            <Setter Property="Background" Value="{DynamicResource ControlBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Foreground" Value="#FFF2F6F8" />
             <Setter Property="Cursor" Value="Hand" />
@@ -29,11 +40,11 @@
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#80509BC7" />
-                    <Setter Property="BorderBrush" Value="#BFD0E9F5" />
+                    <Setter Property="Background" Value="{DynamicResource ControlHoverBrush}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource ControlHoverBorderBrush}" />
                 </Trigger>
                 <Trigger Property="IsPressed" Value="True">
-                    <Setter Property="Background" Value="#CC246C96" />
+                    <Setter Property="Background" Value="{DynamicResource ControlPressedBrush}" />
                     <Setter Property="BorderBrush" Value="#FFFFFFFF" />
                 </Trigger>
             </Style.Triggers>
@@ -42,8 +53,8 @@
             <Setter Property="Width" Value="24" />
             <Setter Property="Height" Value="22" />
             <Setter Property="Padding" Value="0" />
-            <Setter Property="Background" Value="#332B8AC6" />
-            <Setter Property="BorderBrush" Value="#667FA7BE" />
+            <Setter Property="Background" Value="{DynamicResource ControlBackgroundBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ControlBorderBrush}" />
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Foreground" Value="#FFF2F6F8" />
             <Setter Property="Cursor" Value="Hand" />
@@ -63,16 +74,16 @@
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#80509BC7" />
-                    <Setter Property="BorderBrush" Value="#BFD0E9F5" />
+                    <Setter Property="Background" Value="{DynamicResource ControlHoverBrush}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource ControlHoverBorderBrush}" />
                 </Trigger>
                 <Trigger Property="IsPressed" Value="True">
-                    <Setter Property="Background" Value="#CC246C96" />
+                    <Setter Property="Background" Value="{DynamicResource ControlPressedBrush}" />
                     <Setter Property="BorderBrush" Value="#FFFFFFFF" />
                 </Trigger>
                 <Trigger Property="IsChecked" Value="True">
-                    <Setter Property="Background" Value="#CC246C96" />
-                    <Setter Property="BorderBrush" Value="#FFD0E9F5" />
+                    <Setter Property="Background" Value="{DynamicResource ControlPressedBrush}" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource TextFocusBorderBrush}" />
                     <Setter Property="Foreground" Value="#FFFFFFFF" />
                     <Setter Property="ToolTip" Value="Unlock guide" />
                 </Trigger>
@@ -90,11 +101,11 @@
             <Setter Property="BorderThickness" Value="1" />
             <Setter Property="Foreground" Value="#FFF2F6F8" />
             <Setter Property="CaretBrush" Value="#FFF2F6F8" />
-            <Setter Property="SelectionBrush" Value="#CC428BB5" />
+            <Setter Property="SelectionBrush" Value="{DynamicResource TextSelectionBrush}" />
             <Setter Property="SelectionOpacity" Value="0.8" />
             <Style.Triggers>
                 <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                    <Setter Property="BorderBrush" Value="#FF67A9CF" />
+                    <Setter Property="BorderBrush" Value="{DynamicResource TextFocusBorderBrush}" />
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -112,17 +123,23 @@
 
         <!-- Static visual row-alignment aids; they do not participate in input or geometry. -->
         <Rectangle Height="1" VerticalAlignment="Top" Margin="9,29,9,0"
-                   Fill="#CC428BB5" IsHitTestVisible="False" />
+                   Fill="{DynamicResource CalibrationBrush}" IsHitTestVisible="False" />
         <Rectangle Height="1" VerticalAlignment="Bottom" Margin="9,0,9,21"
-                   Fill="#CC428BB5" IsHitTestVisible="False" />
+                   Fill="{DynamicResource CalibrationBrush}" IsHitTestVisible="False" />
 
         <Border Margin="1" BorderBrush="#665F6A71" BorderThickness="1" IsHitTestVisible="False" />
-        <Border Margin="9,30,9,22" BorderBrush="#B3428BB5" BorderThickness="1" IsHitTestVisible="False" />
+        <Border Margin="9,30,9,22" BorderBrush="{DynamicResource InnerBorderBrush}" BorderThickness="1" IsHitTestVisible="False" />
 
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top"
                     Margin="0,4,5,0">
-            <!-- Reserved space for a future color selector. -->
-            <Border Width="28" IsHitTestVisible="False" />
+            <Button x:Name="ColorSelectorButton" Style="{StaticResource FocusGuideButtonStyle}"
+                    Margin="0,0,4,0" ToolTip="Change color" Click="ColorSelectorButton_Click">
+                <Grid Width="12" Height="12">
+                    <Ellipse Width="10" Height="10" Fill="{DynamicResource AccentBrush}"
+                             Stroke="#FFF2F6F8" StrokeThickness="1" />
+                    <Ellipse Width="3" Height="3" Margin="6,0,0,6" Fill="#FFF2F6F8" />
+                </Grid>
+            </Button>
             <TextBox x:Name="ScratchpadTextBox" Style="{StaticResource ScratchpadTextBoxStyle}"
                      Margin="0,0,4,0" MaxLines="1" TextWrapping="NoWrap"
                      SpellCheck.IsEnabled="False" />
