@@ -17,7 +17,7 @@ The first testable version should:
 - allow mouse interaction through the transparent center to the application underneath,
 - provide compact Lock, Up, Down, Minimize, and Close controls without blocking the center,
 - provide a compact left-aligned color selector, scratchpad text field, and Copy button,
-- provide five restrained themes that recolor the whole translucent frame,
+- provide six restrained themes that recolor the whole translucent frame,
 - provide broad integrated drag areas across the frame,
 - show two thin visual-only row-alignment lines in a brighter matching theme color,
 - avoid ticks, scales, or other measurement styling,
@@ -87,7 +87,7 @@ broad exclusions. Do not disable antivirus protection to run either variant.
 
 **Phase 6 — MVP polish and release candidate; combined behavior requires manual Windows validation.**
 
-The guide uses an approximately 88%-opaque glass-like frame, with Blue, Green, Amber, Red, and Purple themes that recolor the complete mask and its coordinated controls.
+The guide uses an approximately 88%-opaque glass-like frame, with Graphite, Blue, Green, Amber, Red, and Purple themes that recolor the complete mask and its coordinated controls.
 Its 30 DIP top, 22 DIP bottom, and 9 DIP side bars intentionally mask neighboring rows.
 The center is removed from the native window region so input can reach an unrelated
 application underneath. The bars are integrated drag surfaces, while a narrow outer band

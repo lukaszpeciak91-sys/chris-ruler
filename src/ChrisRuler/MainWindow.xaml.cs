@@ -3,7 +3,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Shapes;
 
 namespace ChrisRuler;
@@ -94,8 +93,8 @@ public partial class MainWindow : Window
 
     private void BuildColorMenu()
     {
-        colorMenu.Background = new SolidColorBrush(Color.FromRgb(0x24, 0x29, 0x2D));
-        colorMenu.Foreground = new SolidColorBrush(Color.FromRgb(0xF2, 0xF6, 0xF8));
+        colorMenu.Style = (Style)FindResource("ColorMenuStyle");
+        Style itemStyle = (Style)FindResource("ColorMenuItemStyle");
 
         foreach (ColorTheme theme in ColorTheme.Available)
         {
@@ -114,6 +113,7 @@ public partial class MainWindow : Window
                 Header = header,
                 IsCheckable = true,
                 IsChecked = theme == selectedTheme,
+                Style = itemStyle,
                 Tag = theme
             };
             item.Click += ColorTheme_Click;
