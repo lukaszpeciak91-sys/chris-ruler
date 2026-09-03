@@ -125,15 +125,15 @@
                    Fill="{DynamicResource FrameBrush}" IsHitTestVisible="False" />
 
         <!-- Static visual row-alignment aids; they do not participate in input or geometry. -->
-        <Rectangle Height="1" VerticalAlignment="Top" Margin="9,29,9,0"
+        <Rectangle x:Name="TopCalibrationLine" Height="1" VerticalAlignment="Top" Margin="9,29,9,0"
                    Fill="{DynamicResource CalibrationBrush}" IsHitTestVisible="False" />
-        <Rectangle Height="1" VerticalAlignment="Bottom" Margin="9,0,9,21"
+        <Rectangle x:Name="BottomCalibrationLine" Height="1" VerticalAlignment="Bottom" Margin="9,0,9,21"
                    Fill="{DynamicResource CalibrationBrush}" IsHitTestVisible="False" />
 
-        <Border Margin="1" BorderBrush="{DynamicResource OuterBorderBrush}" BorderThickness="1" IsHitTestVisible="False" />
-        <Border Margin="9,30,9,22" BorderBrush="{DynamicResource InnerBorderBrush}" BorderThickness="1" IsHitTestVisible="False" />
+        <Border x:Name="OuterAccentBorder" Margin="1" BorderBrush="{DynamicResource OuterBorderBrush}" BorderThickness="1" IsHitTestVisible="False" />
+        <Border x:Name="InnerAccentBorder" Margin="9,30,9,22" BorderBrush="{DynamicResource InnerBorderBrush}" BorderThickness="1" IsHitTestVisible="False" />
 
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top"
+        <StackPanel x:Name="LeftControls" Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Top"
                     Margin="5,4,0,0">
             <Button x:Name="ColorSelectorButton" Style="{StaticResource FocusGuideButtonStyle}"
                     Margin="0,0,4,0" ToolTip="Change color" Click="ColorSelectorButton_Click">
@@ -156,7 +156,7 @@
             </Button>
         </StackPanel>
 
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top"
+        <StackPanel x:Name="RightControls" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top"
                     Margin="0,4,5,0">
             <ToggleButton x:Name="LockButton" Style="{StaticResource FocusGuideToggleButtonStyle}"
                           Margin="0,0,4,0" Click="LockButton_Click">
@@ -205,5 +205,14 @@
                       Data="M 0,0 L 8,8 M 8,0 L 0,8" />
             </Button>
         </StackPanel>
+
+        <Button x:Name="NewRulerButton" Style="{StaticResource FocusGuideButtonStyle}"
+                Width="20" Height="18" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                Margin="0,0,5,2" ToolTip="New ruler" Click="NewRulerButton_Click">
+            <Path Width="10" Height="10" Stretch="Fill"
+                  Stroke="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"
+                  StrokeThickness="1.5" StrokeStartLineCap="Square" StrokeEndLineCap="Square"
+                  Data="M 5,0 L 5,10 M 0,5 L 10,5" />
+        </Button>
     </Grid>
 </Window>

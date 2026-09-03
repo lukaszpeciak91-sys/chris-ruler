@@ -14,22 +14,33 @@ public partial class MainWindow : Window
     private readonly RulerCoordinator coordinator;
     private readonly bool ownsGeometryPersistence;
     private readonly ContextMenu colorMenu = new();
-    private ColorTheme selectedTheme = ColorTheme.Available[0];
+    private ColorTheme selectedTheme;
 
-    internal MainWindow(RulerCoordinator coordinator, bool ownsGeometryPersistence)
+    internal MainWindow(
+        RulerCoordinator coordinator,
+        bool ownsGeometryPersistence,
+        ColorTheme selectedTheme,
+        WindowGeometry? initialGeometry)
     {
         this.coordinator = coordinator;
         this.ownsGeometryPersistence = ownsGeometryPersistence;
+        this.selectedTheme = selectedTheme;
         InitializeComponent();
         ApplyTheme(selectedTheme);
         BuildColorMenu();
         nativeBehavior = new NativeOverlayWindowBehavior(
-            this, ownsGeometryPersistence, MarkActive,
+            this, ownsGeometryPersistence, initialGeometry, MarkActive,
             ColorSelectorButton, ScratchpadTextBox, CopyButton, CloseButton, MinimizeButton, LockButton,
-            UpRowButton, DownRowButton);
+            UpRowButton, DownRowButton, NewRulerButton);
         PreviewMouseDown += OnPreviewMouseDown;
+        coordinator.ActiveRulerChanged += OnActiveRulerChanged;
         coordinator.Register(this);
+        UpdateActiveAppearance();
     }
+
+    internal ColorTheme SelectedTheme => selectedTheme;
+
+    internal WindowGeometry? GetOffsetCloneGeometry() => nativeBehavior.GetOffsetCloneGeometry();
 
     internal void MoveUpOneRow() => nativeBehavior.MoveUpOneRow();
 
@@ -49,6 +60,22 @@ public partial class MainWindow : Window
     private void DownRowButton_Click(object sender, RoutedEventArgs e) => nativeBehavior.MoveDownOneRow();
 
     private void MinimizeButton_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
+
+    private void NewRulerButton_Click(object sender, RoutedEventArgs e) => coordinator.CreateNewRuler();
+
+    private void OnActiveRulerChanged(object? sender, EventArgs e) => UpdateActiveAppearance();
+
+    private void UpdateActiveAppearance()
+    {
+        double detailOpacity = coordinator.IsActive(this) ? 1.0 : 0.52;
+        TopCalibrationLine.Opacity = detailOpacity;
+        BottomCalibrationLine.Opacity = detailOpacity;
+        OuterAccentBorder.Opacity = detailOpacity;
+        InnerAccentBorder.Opacity = detailOpacity;
+        LeftControls.Opacity = detailOpacity;
+        RightControls.Opacity = detailOpacity;
+        NewRulerButton.Opacity = detailOpacity;
+    }
 
     private void CopyButton_Click(object sender, RoutedEventArgs e)
     {
@@ -142,6 +169,7 @@ public partial class MainWindow : Window
     protected override void OnClosed(EventArgs e)
     {
         PreviewMouseDown -= OnPreviewMouseDown;
+        coordinator.ActiveRulerChanged -= OnActiveRulerChanged;
         nativeBehavior.Dispose();
         coordinator.Unregister(this);
         base.OnClosed(e);

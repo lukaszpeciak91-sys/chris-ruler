@@ -10,18 +10,7 @@ public partial class App : Application
     {
         base.OnStartup(e);
         coordinator = new RulerCoordinator();
-        CreateRulerWindow(ownsGeometryPersistence: true).Show();
-    }
-
-    /// <summary>Creates another ruler in this process; creation UI is intentionally deferred.</summary>
-    internal MainWindow CreateRulerWindow(bool ownsGeometryPersistence = false)
-    {
-        if (coordinator is null)
-        {
-            throw new InvalidOperationException("The application has not started.");
-        }
-
-        return new MainWindow(coordinator, ownsGeometryPersistence);
+        coordinator.CreateInitialRuler();
     }
 
     protected override void OnExit(ExitEventArgs e)
