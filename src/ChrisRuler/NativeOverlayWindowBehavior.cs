@@ -15,7 +15,8 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
     private const int WmNcHitTest = 0x0084;
     private const int WmSetCursor = 0x0020;
     private const int WmDpiChanged = 0x02E0;
-    private const int WmHotkey = 0x0312;
+    private const int WmNcLButtonDown = 0x00A1;
+    private const int WmNcLButtonDoubleClick = 0x00A3;
 
     private const int HtNowhere = 0;
     private const int HtCaption = 2;
@@ -44,29 +45,30 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
     private const double ResizeBandThicknessDip = 3;
     private const double CornerLengthDip = 16;
     private const int IdcSizeAll = 32646;
-    private const uint ModAlt = 0x0001;
-    private const uint VkUp = 0x26;
-    private const uint VkDown = 0x28;
-    private const int MoveUpHotkeyId = 1;
-    private const int MoveDownHotkeyId = 2;
 
     private readonly Window window;
     private readonly FrameworkElement[] controls;
+    private readonly bool ownsGeometryPersistence;
+    private readonly Action markActive;
     private readonly WindowGeometryStore geometryStore = new();
     private HwndSource? source;
     private DispatcherOperation? pendingRegionUpdate;
     private nint hwnd;
     private bool disposed;
-    private bool moveUpHotkeyRegistered;
-    private bool moveDownHotkeyRegistered;
     private nint sizeAllCursor;
     private WindowGeometry? lastNormalGeometry;
 
     public bool IsLocked { get; set; }
 
-    public NativeOverlayWindowBehavior(Window window, params FrameworkElement[] controls)
+    public NativeOverlayWindowBehavior(
+        Window window,
+        bool ownsGeometryPersistence,
+        Action markActive,
+        params FrameworkElement[] controls)
     {
         this.window = window;
+        this.ownsGeometryPersistence = ownsGeometryPersistence;
+        this.markActive = markActive;
         this.controls = controls;
         window.SourceInitialized += OnSourceInitialized;
         window.SizeChanged += OnSizeChanged;
@@ -88,8 +90,6 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
         window.Loaded -= OnLoaded;
         pendingRegionUpdate?.Abort();
         pendingRegionUpdate = null;
-
-        UnregisterHotkeys();
 
         if (source is not null)
         {
@@ -116,12 +116,11 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
         }
 
         source.AddHook(WindowProc);
-        RestoreWindowGeometry();
+        if (ownsGeometryPersistence)
+        {
+            RestoreWindowGeometry();
+        }
         CaptureNormalGeometry();
-        // RegisterHotKey provides the two deliberate application shortcuts without
-        // installing a global keyboard hook or observing any unrelated input.
-        moveUpHotkeyRegistered = RegisterHotKey(hwnd, MoveUpHotkeyId, ModAlt, VkUp);
-        moveDownHotkeyRegistered = RegisterHotKey(hwnd, MoveDownHotkeyId, ModAlt, VkDown);
         ApplyFrameRegion();
     }
 
@@ -236,21 +235,10 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
             return HitTest(lParam);
         }
 
-        if (message == WmHotkey)
+        if (message is WmNcLButtonDown or WmNcLButtonDoubleClick)
         {
-            int hotkeyId = unchecked((int)(long)wParam);
-            if (hotkeyId == MoveUpHotkeyId)
-            {
-                MoveUpOneRow();
-                handled = true;
-            }
-            else if (hotkeyId == MoveDownHotkeyId)
-            {
-                MoveDownOneRow();
-                handled = true;
-            }
-
-            return nint.Zero;
+            // Caption and edge interaction begins outside WPF's client mouse events.
+            markActive();
         }
 
         if (message == WmSetCursor && unchecked((short)((long)lParam & 0xFFFF)) == HtCaption)
@@ -409,26 +397,6 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
             new Action(ApplyPendingFrameRegion));
     }
 
-    private void UnregisterHotkeys()
-    {
-        if (hwnd == nint.Zero)
-        {
-            return;
-        }
-
-        if (moveUpHotkeyRegistered)
-        {
-            UnregisterHotKey(hwnd, MoveUpHotkeyId);
-            moveUpHotkeyRegistered = false;
-        }
-
-        if (moveDownHotkeyRegistered)
-        {
-            UnregisterHotKey(hwnd, MoveDownHotkeyId);
-            moveDownHotkeyRegistered = false;
-        }
-    }
-
     private int DipToPixels(double dip)
     {
         uint dpi = GetDpiForWindow(hwnd);
@@ -498,14 +466,6 @@ internal sealed class NativeOverlayWindowBehavior : IDisposable
 
     [DllImport("user32.dll")]
     private static extern nint SetCursor(nint cursor);
-
-    [DllImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool RegisterHotKey(nint hwnd, int id, uint modifiers, uint virtualKey);
-
-    [DllImport("user32.dll")]
-    [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool UnregisterHotKey(nint hwnd, int id);
 
     [DllImport("user32.dll")]
     private static extern int GetSystemMetrics(int index);

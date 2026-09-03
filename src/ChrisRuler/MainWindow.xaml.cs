@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 
@@ -10,18 +11,33 @@ namespace ChrisRuler;
 public partial class MainWindow : Window
 {
     private readonly NativeOverlayWindowBehavior nativeBehavior;
+    private readonly RulerCoordinator coordinator;
+    private readonly bool ownsGeometryPersistence;
     private readonly ContextMenu colorMenu = new();
     private ColorTheme selectedTheme = ColorTheme.Available[0];
 
-    public MainWindow()
+    internal MainWindow(RulerCoordinator coordinator, bool ownsGeometryPersistence)
     {
+        this.coordinator = coordinator;
+        this.ownsGeometryPersistence = ownsGeometryPersistence;
         InitializeComponent();
         ApplyTheme(selectedTheme);
         BuildColorMenu();
         nativeBehavior = new NativeOverlayWindowBehavior(
-            this, ColorSelectorButton, ScratchpadTextBox, CopyButton, CloseButton, MinimizeButton, LockButton,
+            this, ownsGeometryPersistence, MarkActive,
+            ColorSelectorButton, ScratchpadTextBox, CopyButton, CloseButton, MinimizeButton, LockButton,
             UpRowButton, DownRowButton);
+        PreviewMouseDown += OnPreviewMouseDown;
+        coordinator.Register(this);
     }
+
+    internal void MoveUpOneRow() => nativeBehavior.MoveUpOneRow();
+
+    internal void MoveDownOneRow() => nativeBehavior.MoveDownOneRow();
+
+    private void MarkActive() => coordinator.MarkActive(this);
+
+    private void OnPreviewMouseDown(object sender, MouseButtonEventArgs e) => MarkActive();
 
     private void CloseButton_Click(object sender, RoutedEventArgs e) => Close();
 
@@ -113,13 +129,18 @@ public partial class MainWindow : Window
         base.OnClosing(e);
         if (!e.Cancel)
         {
-            nativeBehavior.SaveWindowGeometry();
+            if (ownsGeometryPersistence)
+            {
+                nativeBehavior.SaveWindowGeometry();
+            }
         }
     }
 
     protected override void OnClosed(EventArgs e)
     {
+        PreviewMouseDown -= OnPreviewMouseDown;
         nativeBehavior.Dispose();
+        coordinator.Unregister(this);
         base.OnClosed(e);
     }
 }

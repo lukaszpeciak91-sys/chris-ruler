@@ -96,6 +96,9 @@ active-row center between the masks. The top-right Close button exits normally. 
 taskbar behavior and restores to the same bounds. The Up and Down buttons move the guide by exactly the transparent-center height and
 stop at the virtual desktop boundaries. The navigation step therefore matches the row
 height selected by resizing the guide. Alt+Up and Alt+Down invoke the same row navigation.
+The application architecture supports multiple rulers in one process. These global shortcuts are
+registered once for the process and routed to the last ruler the user interacted with; that ruler
+remains the target after focus returns to the underlying application.
 Locking the guide protects that selected row height by disabling mouse dragging and resizing;
 button and keyboard row navigation, the scratchpad and its Copy button, Minimize, Close, and center click-through remain available until
 the guide is unlocked. A compact selector to the left of the scratchpad offers Blue, Green, Amber, Red, and Purple
